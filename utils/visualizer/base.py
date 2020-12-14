@@ -6,7 +6,7 @@ from ..constants import Constants as Const
 
 class Visualizer:
     def __init__(self):
-        style.use(Const.MATPLOTLIB_STYLE)
+        style.use(Const.STYLE)
         mpl.rcParams.update(
             {
                 "pgf.texsystem": "pdflatex",
@@ -25,6 +25,7 @@ class Visualizer:
                 "axes.labelsize": Const.AXIS_FONT_SIZE,
                 "xtick.labelsize": Const.TICKS_FONT_SIZE,
                 "ytick.labelsize": Const.TICKS_FONT_SIZE,
+                "scatter.marker": Const.MARKER,
             }
         )
         mpl.rcParams["savefig.format"] = Const.OUT_FORMAT

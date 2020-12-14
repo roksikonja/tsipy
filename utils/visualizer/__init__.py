@@ -1,4 +1,4 @@
 from .base import *
-from .results import *
+from .plot import *
 
 visualizer = Visualizer()

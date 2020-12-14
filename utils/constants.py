@@ -10,7 +10,7 @@ class Constants(object):
     RANDOM_SEED = 0
 
     # PLOTTING
-    MATPLOTLIB_STYLE = "seaborn"
+    STYLE = "seaborn-colorblind"
     COLORS = list(mcolors.TABLEAU_COLORS)
     FIG_SIZE = (8, 6)
     OUT_FORMAT = "pdf"
@@ -22,6 +22,8 @@ class Constants(object):
     X_TICKER = 4
 
     LW = None
+    MARKER = "x"
+    MARKER_SIZE = 3
 
     # UNITS
     DAY_UNIT = "TIME [mission days]"

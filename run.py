@@ -1,6 +1,10 @@
+import os
+
+import gpflow as gpf
 import numpy as np
 import tensorflow as tf
 
+import tsipy
 from tsipy.correction import (
     ExposureMethod,
     compute_exposure,
@@ -8,16 +12,27 @@ from tsipy.correction import (
     CorrectionMethod,
     correct_degradation,
 )
-from tsipy.fusion import FusionModel, fuse_signals
-from utils import create_results_dir
-from utils.constants import Constants as Const
-from utils.data import load_data, time_output
-from utils.visualizer import pprint, plot_signals
+from tsipy.fusion import (
+    FusionModel,
+    MultiWhiteKernel,
+    build_sensor_labels,
+    build_output_labels,
+    concatenate_labels,
+)
+from utils import create_results_dir, Constants as Const
+from utils.data import (
+    load_data,
+    get_time_output,
+    transform_time_to_unit,
+    downsampling_indices_by_max_points,
+)
+from utils.visualizer import (
+    pprint,
+    plot_signals,
+    plot_signals_mean_std_precompute,
+)
 
 if __name__ == "__main__":
-    np.random.seed(Const.RANDOM_SEED)
-    tf.random.set_seed(Const.RANDOM_SEED)
-
     results_dir = create_results_dir(Const.RESULTS_DIR, "virgo")
 
     """
@@ -31,6 +46,9 @@ if __name__ == "__main__":
     """
         Dataset
     """
+    np.random.seed(Const.RANDOM_SEED)
+    tf.random.set_seed(Const.RANDOM_SEED)
+
     t_field = "t"
     e_field = "e"
 
@@ -54,7 +72,7 @@ if __name__ == "__main__":
 
     pprint(t_field, t.shape)
     pprint(a_field, a.shape, np.sum(~np.isnan(a)))
-    pprint(b_field, b.shape, np.sum(~np.isnan(b)), "\n")
+    pprint(b_field, b.shape, np.sum(~np.isnan(b)))
 
     # Compute exposure
     e_a = compute_exposure(a, method=exposure_method)
@@ -89,13 +107,16 @@ if __name__ == "__main__":
     """
         Degradation correction
     """
+    degradation_model = tsipy.correction.load_model(degradation_model)
+    degradation_model.initial_fit(a_m, b_m, e_a_m)
+
     a_m_c, b_m_c, degradation_model, history = correct_degradation(
         t_m,
         a_m,
         e_a_m,
         b_m,
         e_b_m,
-        degradation_model=degradation_model,
+        model=degradation_model,
         method=correction_method,
     )
 
@@ -104,7 +125,7 @@ if __name__ == "__main__":
     a_c_nn = np.divide(a_nn, d_a_c)
     b_c_nn = np.divide(b_nn, d_b_c)
 
-    plot_signals(
+    fig, _ = plot_signals(
         [
             (t_m, a_m, r"$a$", False),
             (t_m, b_m, r"$b$", False),
@@ -116,8 +137,9 @@ if __name__ == "__main__":
         x_label=Const.YEAR_UNIT,
         y_label=Const.TSI_UNIT,
     )
+    fig.show()
 
-    plot_signals(
+    fig, _ = plot_signals(
         [
             (t_m, a_m_c, r"$a_c$", False),
             (t_m, b_m_c, r"$b_c$", False),
@@ -129,30 +151,103 @@ if __name__ == "__main__":
         x_label=Const.YEAR_UNIT,
         y_label=Const.TSI_UNIT,
     )
+    fig.show()
 
-    plot_signals(
+    fig, _ = plot_signals(
         [
             (t_a_nn, d_a_c, r"$d(e_a(t))$", False),
             (t_b_nn, d_b_c, r"$d(e_b(t))$", False),
         ],
         results_dir=results_dir,
         title="degradation",
-        legend="upper right",
+        legend="lower left",
         x_ticker=Const.X_TICKER,
         x_label=Const.YEAR_UNIT,
         y_label=Const.DEGRADATION_UNIT,
     )
+    fig.show()
 
     """
         Data fusion
-        
-        np.random.seed(Const.RANDOM_SEED)
-        tf.random.set_seed(Const.RANDOM_SEED)
-    
-        t_out = time_output(t_a_nn, t_b_nn, n_out_per_unit=24)
-        pprint("t_out", t_out)
-    
-        out_mean, out_std, fusion_model = fuse_signals(
-            t_a_nn, t_b_nn, a_c_nn, b_c_nn, t_out, fusion_model=fusion_model
-        )
     """
+    gpf.config.set_default_float(np.float64)
+    np.random.seed(Const.RANDOM_SEED)
+    tf.random.set_seed(Const.RANDOM_SEED)
+
+    pprint("t_a_nn", t_a_nn.shape)
+    pprint("t_b_nn", t_b_nn.shape)
+    pprint("a_c_nn", a_c_nn.shape)
+    pprint("b_c_nn", b_c_nn.shape)
+
+    labels, t_labels = build_sensor_labels((t_a_nn, t_b_nn))
+    s = np.hstack((a_c_nn, b_c_nn))
+    t = np.hstack((t_a_nn, t_b_nn))
+    t = concatenate_labels(t, t_labels)
+
+    pprint("labels", labels)
+    pprint("t_labels", t_labels.shape)
+    pprint("t", t.shape)
+    pprint("s", s.shape)
+
+    t_out = get_time_output(t_a_nn, t_b_nn, n_out_per_unit=24)
+    t_out_labels = build_output_labels(t_out)
+    t_out = concatenate_labels(t_out, t_out_labels)
+
+    pprint("x_out_labels", t_out_labels.shape)
+    pprint("t_out", t_out.shape)
+
+    # Kernel
+    matern_kernel = gpf.kernels.Matern12(active_dims=[0])  # Kernel for time dimension
+
+    cond = True
+    if cond:
+        white_kernel = MultiWhiteKernel(
+            labels=labels, active_dims=[1]
+        )  # Kernel for sensor dimension
+    else:
+        white_kernel = gpf.kernels.White(active_dims=[1])
+
+    kernel = matern_kernel + white_kernel
+
+    fusion_model = tsipy.fusion.load_model(
+        fusion_model, kernel=kernel, num_inducing_pts=200
+    )
+    fusion_model.fit(t, s, max_iter=1000, verbose=True)
+    print(fusion_model)
+
+    # Predict
+    s_out_mean, s_out_std = fusion_model(t_out)
+    t_out = t_out[:, 0]
+
+    pprint("t_out", t_out.shape)
+    pprint("s_out_mean", s_out_mean.shape)
+    pprint("s_out_std", s_out_std.shape)
+
+    fig, ax = plot_signals_mean_std_precompute(
+        [(t_out, s_out_mean, s_out_std, "SVGP")],
+        results_dir=results_dir,
+        title="signals_fused",
+        legend="upper left",
+        x_ticker=Const.X_TICKER,
+        x_label=Const.YEAR_UNIT,
+        y_label=Const.TSI_UNIT,
+        y_lim=[1362, 1369],
+    )
+    fig.show()
+    indices_a = downsampling_indices_by_max_points(
+        t_a_nn, max_points=2e4
+    )  # Downsample signal a for plotting
+    ax.scatter(
+        transform_time_to_unit(t_a_nn[indices_a], x_label=Const.YEAR_UNIT),
+        a_c_nn[indices_a],
+        label="$a_c$",
+        s=Const.MARKER_SIZE,
+    )
+    ax.scatter(
+        transform_time_to_unit(t_b_nn, x_label=Const.YEAR_UNIT),
+        b_c_nn,
+        label="$b_c$",
+        s=Const.MARKER_SIZE,
+    )
+    fig.show()
+    fig.savefig(os.path.join(results_dir, "signals_fused_points"))

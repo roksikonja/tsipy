@@ -10,14 +10,14 @@ from ..data import transform_time_to_unit
 
 
 def plot_signals(
-        signal_fourplets,
-        results_dir,
-        title,
-        x_ticker=None,
-        legend=None,
-        y_lim=None,
-        x_label=None,
-        y_label=None,
+    signal_fourplets,
+    results_dir,
+    title,
+    x_ticker=None,
+    legend=None,
+    y_lim=None,
+    x_label=None,
+    y_label=None,
 ):
     fig, ax = plt.subplots()
     for signal_fourplet in signal_fourplets:
@@ -66,16 +66,16 @@ def plot_signals(
 
 
 def plot_signals_mean_std_precompute(
-        signal_fourplets,
-        results_dir,
-        title,
-        x_ticker=None,
-        legend=None,
-        y_lim=None,
-        x_label=None,
-        y_label=None,
-        confidence=0.95,
-        alpha=0.5,
+    signal_fourplets,
+    results_dir,
+    title,
+    x_ticker=None,
+    legend=None,
+    y_lim=None,
+    x_label=None,
+    y_label=None,
+    confidence=0.95,
+    alpha=0.5,
 ):
     factor = norm.ppf(1 / 2 + confidence / 2)  # 0.95 % -> 1.959963984540054
 

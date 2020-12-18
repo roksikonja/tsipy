@@ -188,15 +188,21 @@ class ExpLinModel(BaseModel, ExpFamilyMixin):
 
 
 class MRModel(BaseModel):
-    def __init__(self):
+    def __init__(
+        self,
+        y_max=MRConst.Y_MAX,
+        y_min=MRConst.Y_MIN,
+        increasing=MRConst.INCREASING,
+        out_of_bounds=MRConst.OUT_OF_BOUNDS,
+    ):
         self.name = "MR"
         self.convex = None
 
         self._model = IsotonicRegression(
-            y_max=MRConst.Y_MAX,
-            y_min=MRConst.Y_MIN,
-            increasing=MRConst.INCREASING,
-            out_of_bounds=MRConst.OUT_OF_BOUNDS,
+            y_max=y_max,
+            y_min=y_min,
+            increasing=increasing,
+            out_of_bounds=out_of_bounds,
         )
 
     def initial_fit(self, a_m, b_m, e_a_m):
@@ -213,21 +219,30 @@ class MRModel(BaseModel):
 
 
 class SmoothMRModel(BaseModel):
-    def __init__(self):
+    def __init__(
+        self,
+        y_max=MRConst.Y_MAX,
+        y_min=MRConst.Y_MIN,
+        increasing=MRConst.INCREASING,
+        out_of_bounds=MRConst.OUT_OF_BOUNDS,
+        number_of_points=SMRConst.NUMBER_OF_POINTS,
+        lam=SMRConst.LAM,
+        solver=cp.ECOS_BB,
+    ):
         self.name = "SmoothMR"
         self.convex = True
 
-        self.increasing = SMRConst.INCREASING
-        self.number_of_points = SMRConst.NUMBER_OF_POINTS
-        self.solver = cp.ECOS_BB
-        self.lam = SMRConst.LAM
+        self.increasing = increasing
+        self.number_of_points = number_of_points
+        self.lam = lam
+        self.solver = solver
 
         self._model = None
         self._mr_model = IsotonicRegression(
-            y_max=MRConst.Y_MAX,
-            y_min=MRConst.Y_MIN,
-            increasing=MRConst.INCREASING,
-            out_of_bounds=MRConst.OUT_OF_BOUNDS,
+            y_max=y_max,
+            y_min=y_min,
+            increasing=increasing,
+            out_of_bounds=out_of_bounds,
         )
 
     def initial_fit(self, a_m, b_m, e_a_m):

@@ -8,7 +8,7 @@ from gpflow.utilities.utilities import tabulate_module_summary, default_summary_
 
 from .parameters import SVGPConstants as SVGPConst
 from ..utils import clipping_indices
-from ...data import normalize, denormalize, find_nearest_indices
+from ...utils import normalize, denormalize, find_nearest_indices
 
 
 class FusionModel(Enum):

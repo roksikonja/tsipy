@@ -9,6 +9,11 @@ Follows algorithms as described in
 
 - Denormalization of y_out_std.
 
+## Future Releases
+
+- Noise standard deviation extraction.
+- Degradation correction in white kernel.
+
 ## Installation
     
     # venv
@@ -24,6 +29,9 @@ Follows algorithms as described in
     
     RUN pip install numpy pandas matplotlib scipy tables cvxpy gpflow scikit-learn
 
+## Usage
+
+Demos can be found in ```./scripts```.
 
 ## Cite
 

@@ -9,17 +9,25 @@ class CorrectionMethod(Enum):
 
 
 def correct_degradation(
-    t_m, a_m, e_a_m, b_m, e_b_m, model, method=CorrectionMethod.CORRECT_ONE, **kwargs
+    t_m,
+    a_m,
+    e_a_m,
+    b_m,
+    e_b_m,
+    model,
+    method=CorrectionMethod.CORRECT_ONE,
+    verbose=False,
+    **kwargs
 ):
     model.convex = True if method == CorrectionMethod.CORRECT_ONE else False
 
     if method == CorrectionMethod.CORRECT_ONE:
         a_m_c, b_m_c, model, history = correct_one(
-            t_m, a_m, e_a_m, b_m, e_b_m, model, **kwargs
+            t_m, a_m, e_a_m, b_m, e_b_m, model, verbose, **kwargs
         )
     elif method == CorrectionMethod.CORRECT_BOTH:
         a_m_c, b_m_c, model, history = correct_both(
-            t_m, a_m, e_a_m, b_m, e_b_m, model, **kwargs
+            t_m, a_m, e_a_m, b_m, e_b_m, model, verbose, **kwargs
         )
     else:
         raise ValueError("Invalid correction method.")

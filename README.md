@@ -9,23 +9,22 @@ Follows algorithms as described in
 
 - Denormalization of y_out_std.
 
-## Future features
-
-- MultiWhiteKernel 
-
 ## Installation
     
-    # Python 3.7.4
+    # venv
+    # python:3.8.7
     pip install numpy pandas matplotlib scipy tables cvxpy gpflow scikit-learn
+
+    # Dockerfile
+    docker build -t python:tsipy .
     
+    FROM python:3.8.7
     
-## Code formatter
+    MAINTAINER Rok Sikonja <sikonjarok@gmail.com>
     
-    pip install black
-    
-    # format code
-    black . --exclude="./venv"
-    
+    RUN pip install numpy pandas matplotlib scipy tables cvxpy gpflow scikit-learn
+
+
 ## Cite
 
     @misc{kolar2020iterative,

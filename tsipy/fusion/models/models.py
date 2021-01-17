@@ -25,15 +25,6 @@ class BaseOutputModel(ABC):
         pass
 
 
-def load_model(fusion_model, **kwargs):
-    if fusion_model == FusionModel.SVGP:
-        model = SVGPModel(**kwargs)
-    else:
-        raise ValueError("Invalid degradation model type.")
-
-    return model
-
-
 class SVGPModel(BaseOutputModel):
     def __init__(
         self,
@@ -56,7 +47,7 @@ class SVGPModel(BaseOutputModel):
         self.y_mean = None
         self.y_std = None
 
-        self.iter_loglikelihood = None
+        self.iter_elbo = None
         self.x_inducing = None
         self.t_prior = None
         self.t_posterior = None
@@ -87,7 +78,9 @@ class SVGPModel(BaseOutputModel):
     def _build_model(self, x, x_inducing):
         # Inducing variables
         if isinstance(x_inducing, type(None)):
-            x_uniform = np.linspace(np.min(x), np.max(x), self.num_inducing_pts + 1)
+            x_uniform = np.linspace(
+                np.min(x[:, 0]), np.max(x[:, 0]), self.num_inducing_pts + 1
+            )
             x_uniform_indices = find_nearest_indices(x[:, 0], x_uniform)
             x_inducing = x[x_uniform_indices, :].copy()
             self.x_inducing = x_inducing
@@ -143,8 +136,11 @@ class SVGPModel(BaseOutputModel):
             learning_rate=learning_rate,
         )
 
+        if verbose:
+            print(self)
+
     def train(self, dataset, batch_size, max_iter, learning_rate):
-        logf = []
+        iter_elbo = []
         train_iter = iter(dataset.batch(batch_size))
         training_loss = self._model.training_loss_closure(train_iter, compile=True)
         optimizer = tf.optimizers.Adam(learning_rate=learning_rate)
@@ -155,12 +151,12 @@ class SVGPModel(BaseOutputModel):
 
         for i in range(max_iter):
             train_step()
-            if i % 10 == 0:
+            if i % (max_iter // 100) == 0:
                 elbo = -training_loss().numpy()
-                logf.append(elbo)
+                iter_elbo.append(elbo)
                 print("Step {:>6}/{}: {:>30.3f}".format(i, max_iter, elbo))
 
-        self.iter_loglikelihood = logf
+        self.iter_elbo = np.array(iter_elbo)
 
     def __str__(self):
         return tabulate_module_summary(self._model, default_summary_fmt())

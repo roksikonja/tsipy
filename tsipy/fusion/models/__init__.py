@@ -1,1 +1,1 @@
-from .models import FusionModel, load_model
+from .models import SVGPModel

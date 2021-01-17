@@ -28,6 +28,7 @@ class Visualizer:
                 "scatter.marker": Const.MARKER,
             }
         )
+
         mpl.rcParams["savefig.format"] = Const.OUT_FORMAT
 
 

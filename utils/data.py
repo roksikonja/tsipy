@@ -56,23 +56,27 @@ def downsampling_indices_by_max_points(x, max_points=1e5):
     return indices
 
 
-def mission_day_to_year(day):
-    start = datetime.datetime(1996, 1, 1)
+def mission_day_to_year(day, start):
     years = start.year + day / 365.25
 
     return years
 
 
-def transform_time_to_unit(t, x_label=Const.YEAR_UNIT):
+def transform_time_to_unit(
+    t, x_label=Const.YEAR_UNIT, start=datetime.datetime(1996, 1, 1)
+):
     if x_label == Const.YEAR_UNIT:
-        t = np.array(list(map(mission_day_to_year, t)))
+        t = np.array([mission_day_to_year(t_, start) for t_ in t])
 
     return t
 
 
-def get_time_output(t_a_nn, t_b_nn, n_out_per_unit=24):
-    min_time = 0
-    max_time = np.minimum(np.floor(t_a_nn.max()), np.floor(t_b_nn.max()))
+def get_time_output(t_nns, n_out_per_unit=24, min_time=None, max_time=None):
+    if not min_time:
+        min_time = np.max([np.min(t_nn) for t_nn in t_nns])
+
+    if not max_time:
+        max_time = np.min([np.max(t_nn) for t_nn in t_nns])
 
     n_out = int(n_out_per_unit * (max_time - min_time) + 1)
 

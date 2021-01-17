@@ -11,6 +11,10 @@ from tsipy.fusion.utils import build_sensor_labels
 
 class TestWhiteKernel(unittest.TestCase):
     def test_kernel(self):
+        """
+        Test implementation of the custom white kernel.
+        """
+
         np.random.seed(0)
 
         x_a = np.random.randint(0, 5, 3)

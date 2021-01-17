@@ -8,6 +8,7 @@ def correct_one(
     b_m,
     e_b_m,
     model,
+    verbose=False,
     eps=1e-6,
     max_iter=100,
 ):
@@ -16,7 +17,9 @@ def correct_one(
     history = [correction_triplet]
 
     a_m_c, b_m_c = a_m, b_m
-    for _ in range(max_iter):
+    i = 0
+    converged = False
+    while i < max_iter and not converged:
         previous_correction_triplet = correction_triplet
 
         model.fit(ratio_m, e_a_m)
@@ -40,8 +43,11 @@ def correct_one(
             previous_b_m_c
         )
 
-        if delta_norm_a + delta_norm_b < eps:
-            break
+        converged = delta_norm_a + delta_norm_b < eps
+        i = i + 1
+
+    if verbose:
+        print(f"corrected in {i} iterations")
 
     return a_m_c, b_m_c, model, history
 
@@ -53,6 +59,7 @@ def correct_both(
     b_m,
     e_b_m,
     model,
+    verbose=False,
     eps=1e-6,
     max_iter=100,
 ):
@@ -61,7 +68,9 @@ def correct_both(
     history = [correction_triplet]
 
     a_m_c, b_m_c = a_m, b_m
-    for _ in range(max_iter):
+    i = 0
+    converged = False
+    while i < max_iter and not converged:
         previous_correction_triplet = correction_triplet
 
         model.fit(ratio_m, e_a_m)
@@ -85,8 +94,11 @@ def correct_both(
             previous_b_m_c
         )
 
-        if delta_norm_a + delta_norm_b < eps:
-            break
+        converged = delta_norm_a + delta_norm_b < eps
+        i = i + 1
+
+    if verbose:
+        print(f"corrected in {i} iterations")
 
     # Re-fit
     ratio_m = np.divide(a_m, b_m_c + 1e-9)

@@ -4,6 +4,7 @@ import os
 import gpflow as gpf
 import numpy as np
 import pandas as pd
+import scipy.signal
 import tensorflow as tf
 
 import tsipy
@@ -16,7 +17,6 @@ from tsipy.fusion import (
 from utils import Constants as Const
 from utils.data import transform_time_to_unit, create_results_dir
 from utils.visualizer import pprint, plot_signals, plot_signals_and_confidence
-
 
 if __name__ == "__main__":
     results_dir = create_results_dir("../results", "exp-acrim")
@@ -37,6 +37,7 @@ if __name__ == "__main__":
             3: c_field,
         }
     )
+    t_org = data[t_field].values.copy()
     data[t_field] = transform_time_to_unit(
         data[t_field] - data[t_field][0],
         x_label=Const.YEAR_UNIT,
@@ -64,6 +65,23 @@ if __name__ == "__main__":
         x_ticker=1,
         tight_layout=True,
     )
+    fig.show()
+
+    freqs_a, psd_a = scipy.signal.welch(a, fs=1.0, nperseg=1024)
+    freqs_b, psd_b = scipy.signal.welch(b, fs=1.0, nperseg=1024)
+    freqs_c, psd_c = scipy.signal.welch(c, fs=1.0, nperseg=1024)
+    fig, ax = plot_signals(
+        [
+            (freqs_a, psd_a, r"$a$", False),
+            (freqs_b, psd_b, r"$b$", False),
+            (freqs_c, psd_c, r"$c$", False),
+        ],
+        results_dir=results_dir,
+        title="signals_psd",
+        legend="upper right",
+        tight_layout=True,
+    )
+    ax.set_xscale("log")
     fig.show()
 
     """
@@ -158,6 +176,22 @@ if __name__ == "__main__":
     fig.show()
     fig.savefig(os.path.join(results_dir, "signals_fused_points"))
 
+    freqs_s, psd_s = scipy.signal.welch(s_out_mean, fs=1.0, nperseg=1024)
+    fig, ax = plot_signals(
+        [
+            (freqs_a, psd_a, r"$a$", False),
+            (freqs_b, psd_b, r"$b$", False),
+            (freqs_c, psd_c, r"$c$", False),
+            (freqs_s, psd_s, r"$s$", False),
+        ],
+        results_dir=results_dir,
+        title="signals_fused_psd",
+        legend="upper right",
+        tight_layout=True,
+    )
+    ax.set_xscale("log")
+    fig.show()
+
     """
         Training
     """
@@ -170,3 +204,16 @@ if __name__ == "__main__":
         tight_layout=True,
     )
     fig.show()
+
+    """
+        Save
+    """
+    data_results = pd.DataFrame(
+        {
+            t_field + "_org": t_org,
+            t_field: t_out,
+            "s_out_mean": s_out_mean,
+            "s_out_std": s_out_std,
+        }
+    )
+    data_results.to_csv(os.path.join(results_dir, "data_results.csv"))

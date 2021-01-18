@@ -70,7 +70,7 @@ if __name__ == "__main__":
     freqs_a, psd_a = scipy.signal.welch(a, fs=1.0, nperseg=1024)
     freqs_b, psd_b = scipy.signal.welch(b, fs=1.0, nperseg=1024)
     freqs_c, psd_c = scipy.signal.welch(c, fs=1.0, nperseg=1024)
-    fig, ax = plot_signals(
+    fig, _ = plot_signals(
         [
             (freqs_a, psd_a, r"$a$", False),
             (freqs_b, psd_b, r"$b$", False),
@@ -80,8 +80,8 @@ if __name__ == "__main__":
         title="signals_psd",
         legend="upper right",
         tight_layout=True,
+        log_scale_x=True,
     )
-    ax.set_xscale("log")
     fig.show()
 
     """
@@ -188,6 +188,7 @@ if __name__ == "__main__":
         title="signals_fused_psd",
         legend="upper right",
         tight_layout=True,
+        log_scale_x=True,
     )
     ax.set_xscale("log")
     fig.show()

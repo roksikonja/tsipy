@@ -15,6 +15,8 @@ def configure_plot(
     y_lim=None,
     x_label=None,
     y_label=None,
+    log_scale_x=False,
+    log_scale_y=False,
 ):
     if x_ticker:
         ax.xaxis.set_major_locator(ticker.MultipleLocator(x_ticker))
@@ -30,6 +32,12 @@ def configure_plot(
 
     if y_label:
         ax.set_ylabel(y_label)
+
+    if log_scale_x:
+        ax.set_xscale("log")
+
+    if log_scale_y:
+        ax.set_yscale("log")
 
 
 def plot_signals(

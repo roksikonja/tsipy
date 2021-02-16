@@ -20,7 +20,7 @@ Follows algorithms as described in
     # python:3.8.7
     pip install numpy pandas matplotlib scipy tables cvxpy gpflow scikit-learn
 
-    # Dockerfile
+    # Dockerfile - INCOMPLETE USE ABOVE
     docker build -t python:tsipy .
     
     FROM python:3.8.7
@@ -32,6 +32,16 @@ Follows algorithms as described in
 ## Usage
 
 Demos can be found in ```./scripts```.
+
+    # Activate venv
+    # add utils to PYTHONPATH
+    # add tsipy to PYTHONPATH
+    
+    venv/Scripts\activate
+
+    python scripts/demo_generator.py
+
+    python -c "import os; import sys; print(os.getcwd()); print(os.listdir()); print(sys.path)"
 
 ## Cite
 

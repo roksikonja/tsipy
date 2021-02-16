@@ -19,13 +19,13 @@ from utils.data import transform_time_to_unit, create_results_dir
 from utils.visualizer import pprint, plot_signals, plot_signals_and_confidence
 
 if __name__ == "__main__":
-    results_dir = create_results_dir("../results", "exp-acrim")
+    results_dir = create_results_dir("../results", "exp-acrim-erbs")
     t_field = "t"
     a_field, b_field, c_field = "a", "b", "c"
 
     # Load data
     data = pd.read_csv(
-        os.path.join("../data", "ACRIM1_SATIRE_HF.txt"),
+        os.path.join("../data", "VIRGOnew_ERBS_ACRIM2.txt"),
         delimiter=" ",
         header=None,
     )
@@ -37,11 +37,12 @@ if __name__ == "__main__":
             3: c_field,
         }
     )
+
     t_org = data[t_field].values.copy()
     data[t_field] = transform_time_to_unit(
         data[t_field] - data[t_field][0],
         x_label=Const.YEAR_UNIT,
-        start=datetime.datetime(1980, 1, 1),
+        start=datetime.datetime(1996, 1, 1),
     )
 
     t = data[t_field].values
@@ -135,7 +136,7 @@ if __name__ == "__main__":
     fusion_model = tsipy.fusion.models.SVGPModel(kernel=kernel, num_inducing_pts=500)
 
     # Train
-    fusion_model.fit(t, s, max_iter=20000, verbose=True)
+    fusion_model.fit(t, s, max_iter=10000, verbose=True)
 
     """
         Composite

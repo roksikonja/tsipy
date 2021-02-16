@@ -9,7 +9,7 @@ from tsipy.correction import (
     correct_degradation,
     SignalGenerator,
 )
-from utils import create_results_dir
+from utils.data import create_results_dir
 from utils.visualizer import pprint, plot_signals, plot_signals_history
 
 

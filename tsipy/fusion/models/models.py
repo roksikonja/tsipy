@@ -52,6 +52,8 @@ class SVGPModel(BaseOutputModel):
         self.t_prior = None
         self.t_posterior = None
 
+        self.history = []
+
     def __call__(self, x):
         x = normalize(x.copy(), self.x_mean, self.x_std)
         y_mean, y_var = self._model.predict_y(x)
@@ -105,6 +107,8 @@ class SVGPModel(BaseOutputModel):
         batch_size=SVGPConst.BATCH_SIZE,
         max_iter=SVGPConst.MAX_ITER,
         learning_rate=SVGPConst.LEARNING_RATE,
+        x_val=None,
+        n_evals=5,
         verbose=False,
     ):
         self._compute_normalization_values(x, y)
@@ -126,7 +130,7 @@ class SVGPModel(BaseOutputModel):
         self._build_model(x, x_inducing)
 
         if verbose:
-            print(self)
+            self.print()
 
         # Train
         self.train(
@@ -134,12 +138,23 @@ class SVGPModel(BaseOutputModel):
             batch_size=batch_size,
             max_iter=max_iter,
             learning_rate=learning_rate,
+            x_val=x_val,
+            n_evals=n_evals,
         )
 
         if verbose:
-            print(self)
+            self.print()
 
-    def train(self, dataset, batch_size, max_iter, learning_rate):
+    def train(
+        self,
+        dataset,
+        batch_size,
+        max_iter,
+        learning_rate,
+        n_prints=100,
+        x_val=None,
+        n_evals=5,
+    ):
         iter_elbo = []
         train_iter = iter(dataset.batch(batch_size))
         training_loss = self._model.training_loss_closure(train_iter, compile=True)
@@ -151,12 +166,19 @@ class SVGPModel(BaseOutputModel):
 
         for i in range(max_iter):
             train_step()
-            if i % (max_iter // 100) == 0:
+            if i % (max_iter // n_prints) == 0:
                 elbo = -training_loss().numpy()
                 iter_elbo.append(elbo)
                 print("Step {:>6}/{}: {:>30.3f}".format(i, max_iter, elbo))
+
+            if i % (max_iter // n_evals) == 0 and x_val is not None:
+                y_out_mean, y_out_std = self(x_val)
+                self.history.append((y_out_mean, y_out_std))
 
         self.iter_elbo = np.array(iter_elbo)
 
     def __str__(self):
         return tabulate_module_summary(self._model, default_summary_fmt())
+
+    def print(self):
+        print(self)

@@ -3,7 +3,7 @@ class Constants(object):
     RANDOM_SEED = 0
 
     # PLOTTING
-    STYLE = "seaborn-colorblind"
+    STYLE = "seaborn"
     FIG_SIZE = (12, 6)
     OUT_FORMAT = "pdf"
 

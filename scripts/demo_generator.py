@@ -20,7 +20,8 @@ from tsipy.fusion import (
     build_output_labels,
     concatenate_labels,
 )
-from utils import create_results_dir, Constants as Const
+from utils import Constants as Const
+from utils.data import create_results_dir
 from utils.visualizer import (
     pprint,
     plot_signals,
@@ -236,7 +237,7 @@ if __name__ == "__main__":
     fusion_model = tsipy.fusion.models.SVGPModel(kernel=kernel, num_inducing_pts=250)
 
     # Train
-    fusion_model.fit(t, s, max_iter=2500, verbose=True)
+    fusion_model.fit(t, s, max_iter=2500, verbose=True, x_val=t_out, n_evals=5)
 
     # Predict
     s_out_mean, s_out_std = fusion_model(t_out)
@@ -287,3 +288,20 @@ if __name__ == "__main__":
         tight_layout=True,
     )
     fig.show()
+
+    history = fusion_model.history
+    if history:
+        n_evals = len(history)
+        history = [
+            (t_out, mean, f"{i}/{n_evals}", False)
+            for i, (mean, std) in enumerate(history)
+        ]
+        fig, ax = plot_signals(
+            history,
+            results_dir=results_dir,
+            title="signals_fused_history",
+            legend="lower right",
+            x_ticker=1,
+            tight_layout=True,
+        )
+        fig.show()

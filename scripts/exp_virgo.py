@@ -18,8 +18,9 @@ from tsipy.fusion import (
     build_output_labels,
     concatenate_labels,
 )
-from utils import create_results_dir, Constants as Const
+from utils import Constants as Const
 from utils.data import (
+    create_results_dir,
     load_data,
     get_time_output,
     downsampling_indices_by_max_points,

@@ -136,7 +136,7 @@ if __name__ == "__main__":
     fusion_model = tsipy.fusion.models.SVGPModel(kernel=kernel, num_inducing_pts=500)
 
     # Train
-    fusion_model.fit(t, s, max_iter=10000, verbose=True)
+    fusion_model.fit(t, s, max_iter=10000, verbose=True, x_val=t_out, n_evals=10)
 
     """
         Composite
@@ -206,6 +206,23 @@ if __name__ == "__main__":
         tight_layout=True,
     )
     fig.show()
+
+    history = fusion_model.history
+    if history:
+        n_evals = len(history)
+        history = [
+            (t_out, mean, f"{i}/{n_evals}", False)
+            for i, (mean, std) in enumerate(history)
+        ]
+        fig, ax = plot_signals(
+            history,
+            results_dir=results_dir,
+            title="signals_fused_history",
+            legend="lower right",
+            x_ticker=1,
+            tight_layout=True,
+        )
+        fig.show()
 
     """
         Save

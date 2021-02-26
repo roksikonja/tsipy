@@ -4,6 +4,16 @@ import numpy as np
 
 
 def normalize(x, mean, std):
+    """
+
+    Args:
+        x:
+        mean:
+        std:
+
+    Returns:
+
+    """
     if isinstance(x, Real) or len(x.shape) <= 1:
         y = (x - mean) / std
     else:
@@ -30,7 +40,7 @@ def find_nearest(values, targets):
     return indices
 
 
-def find_nearest_indices(sorted_values, sorted_targets):
+def find_nearest_indices(sorted_values, sorted_targets) -> np.ndarray:
     indices = []
 
     k = 0

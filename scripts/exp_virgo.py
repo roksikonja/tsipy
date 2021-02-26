@@ -4,7 +4,8 @@ import gpflow as gpf
 import numpy as np
 import tensorflow as tf
 
-import tsipy
+import tsipy.correction
+import tsipy.fusion
 from tsipy.correction import (
     ExposureMethod,
     compute_exposure,

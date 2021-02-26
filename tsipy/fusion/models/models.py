@@ -6,9 +6,9 @@ import numpy as np
 import tensorflow as tf
 from gpflow.utilities.utilities import tabulate_module_summary, default_summary_fmt
 
-from .parameters import SVGPConstants as SVGPConst
-from ..utils import clipping_indices
-from ...utils import normalize, denormalize, find_nearest_indices
+from tsipy.fusion.models.parameters import SVGPConstants as SVGPConst
+from tsipy.fusion.utils import clipping_indices
+from tsipy.utils import normalize, denormalize, find_nearest_indices
 
 
 class FusionModel(Enum):

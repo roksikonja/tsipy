@@ -4,7 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from .constants import Constants as Const
+from utils.constants import Constants as Const
 
 
 def make_dir(directory):

@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-from .exposure import ExposureMethod, compute_exposure
-from .models import ExpModel
+from tsipy.correction.exposure import ExposureMethod, compute_exposure
+from tsipy.correction.models import ExpModel
 
 
 class GeneratorConstants:

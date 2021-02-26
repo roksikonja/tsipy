@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from .algorithms import correct_one, correct_both
+from tsipy.correction.algorithms import correct_one, correct_both
 
 
 class CorrectionMethod(Enum):

@@ -1,1 +1,1 @@
-from .base import *
+from tsipy.correction.algorithms.base import *

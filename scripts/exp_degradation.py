@@ -1,6 +1,6 @@
 import numpy as np
 
-import tsipy
+import tsipy.correction
 from tsipy.correction import (
     ExposureMethod,
     compute_exposure,

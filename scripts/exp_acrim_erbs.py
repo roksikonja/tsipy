@@ -7,7 +7,7 @@ import pandas as pd
 import scipy.signal
 import tensorflow as tf
 
-import tsipy
+import tsipy.fusion
 from tsipy.fusion import (
     MultiWhiteKernel,
     build_sensor_labels,

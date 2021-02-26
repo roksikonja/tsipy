@@ -5,7 +5,7 @@ import matplotlib.ticker as ticker
 import numpy as np
 from scipy.stats import norm
 
-from ..constants import Constants as Const
+from utils.constants import Constants as Const
 
 
 def configure_plot(

@@ -8,10 +8,10 @@ from scipy.optimize import curve_fit
 from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LinearRegression
 
-from .parameters import ExpConstants as ExpConst
-from .parameters import ExpLinConstants as ExpLinConst
-from .parameters import MRConstants as MRConst
-from .parameters import SMRConstants as SMRConst
+from tsipy.correction.models.parameters import ExpConstants as ExpConst
+from tsipy.correction.models.parameters import ExpLinConstants as ExpLinConst
+from tsipy.correction.models.parameters import MRConstants as MRConst
+from tsipy.correction.models.parameters import SMRConstants as SMRConst
 
 
 class DegradationModel(Enum):

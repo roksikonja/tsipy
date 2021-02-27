@@ -1,1 +1,1 @@
-from tsipy.fusion.models.models import SVGPModel
+from .models import SVGPModel

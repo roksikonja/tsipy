@@ -20,8 +20,14 @@ def build_output_labels(x_out):
     return -np.ones_like(x_out, dtype=np.int)
 
 
-def concatenate_labels(x, labels):
-    return np.vstack((x, labels)).T
+def concatenate_labels(x, labels, sort_axis=None):
+    x = np.vstack((x, labels)).T
+
+    if sort_axis is not None:
+        x_indices_sorted = np.argsort(x[:, sort_axis])
+        x = x[x_indices_sorted, :]
+
+    return x
 
 
 def clipping_indices(x, n_std=5):

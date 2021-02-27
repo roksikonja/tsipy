@@ -1,3 +1,3 @@
-from tsipy.fusion.kernels import *
-from tsipy.fusion.models import *
-from tsipy.fusion.utils import *
+from .kernels import *
+from .models import *
+from .utils import *

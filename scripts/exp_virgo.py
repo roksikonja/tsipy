@@ -196,7 +196,7 @@ if __name__ == "__main__":
     labels, t_labels = build_sensor_labels((t_a_nn, t_b_nn))
     s = np.hstack((a_c_nn, b_c_nn))
     t = np.hstack((t_a_nn, t_b_nn))
-    t = concatenate_labels(t, t_labels)
+    t = concatenate_labels(t, t_labels, sort_axis=0)
 
     pprint("\t- labels", labels)
     pprint("\t- t_labels", t_labels.shape)
@@ -205,7 +205,7 @@ if __name__ == "__main__":
 
     t_out = get_time_output((t_a_nn, t_b_nn), n_out_per_unit=24)
     t_out_labels = build_output_labels(t_out)
-    t_out = concatenate_labels(t_out, t_out_labels)
+    t_out = concatenate_labels(t_out, t_out_labels, sort_axis=0)
 
     pprint("\t- t_out_labels", t_out_labels.shape)
     pprint("\t- t_out", t_out.shape)

@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
     t_out = t_a
     t_out_labels = build_output_labels(t_out)
-    t_out = concatenate_labels(t_out, t_out_labels)
+    t_out = concatenate_labels(t_out, t_out_labels, sort_axis=0)
 
     pprint("t_out_labels", t_out_labels.shape)
     pprint("t_out", t_out.shape)

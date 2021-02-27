@@ -6,9 +6,10 @@ import numpy as np
 import tensorflow as tf
 from gpflow.utilities.utilities import tabulate_module_summary, default_summary_fmt
 
-from tsipy.fusion.models.parameters import SVGPConstants as SVGPConst
-from tsipy.fusion.utils import clipping_indices
-from tsipy.utils import normalize, denormalize, find_nearest_indices
+from .parameters import SVGPConstants as SVGPConst
+from .parameters import LocalSVGPConstants as LocalSVGPConst
+from ..utils import clipping_indices
+from ...utils import normalize, denormalize, find_nearest_indices
 
 
 class FusionModel(Enum):
@@ -25,7 +26,30 @@ class BaseOutputModel(ABC):
         pass
 
 
-class SVGPModel(BaseOutputModel):
+class OutputModelMixin:
+    def __init__(self, normalization, clipping):
+        self.normalization = normalization
+        self.clipping = clipping
+
+        self.x_mean = None
+        self.x_std = None
+        self.y_mean = None
+        self.y_std = None
+
+    def _compute_normalization_values(self, x, y):
+        if self.normalization:
+            self.x_mean = np.mean(x)
+            self.x_std = np.std(x)
+            self.y_mean = np.mean(y)
+            self.y_std = np.std(y)
+        else:
+            self.x_mean = 0.0
+            self.x_std = 1.0
+            self.y_mean = np.mean(y)
+            self.y_std = 1.0
+
+
+class SVGPModel(OutputModelMixin, BaseOutputModel):
     def __init__(
         self,
         kernel,
@@ -34,13 +58,11 @@ class SVGPModel(BaseOutputModel):
         normalization=SVGPConst.NORMALIZATION,
         clipping=SVGPConst.CLIPPING,
     ):
+        super(SVGPModel, self).__init__(normalization=normalization, clipping=clipping)
         self._model = None
-        self.kernel = kernel
+        self._kernel = kernel
         self.num_inducing_pts = num_inducing_pts
         self.inducing_trainable = inducing_trainable
-
-        self.normalization = normalization
-        self.clipping = clipping
 
         self.x_mean = None
         self.x_std = None
@@ -65,18 +87,6 @@ class SVGPModel(BaseOutputModel):
         y_std = denormalize(y_std, 0.0, self.y_std)  # standard deviation scaling
         return y_mean.ravel(), y_std.ravel()
 
-    def _compute_normalization_values(self, x, y):
-        if self.normalization:
-            self.x_mean = np.mean(x)
-            self.x_std = np.std(x)
-            self.y_mean = np.mean(y)
-            self.y_std = np.std(y)
-        else:
-            self.x_mean = 0.0
-            self.x_std = 1.0
-            self.y_mean = np.mean(y)
-            self.y_std = 1.0
-
     def _build_model(self, x, x_inducing):
         # Inducing variables
         if isinstance(x_inducing, type(None)):
@@ -92,7 +102,7 @@ class SVGPModel(BaseOutputModel):
         if isinstance(self._model, type(None)):
             # Build SVGP model
             self._model = gpf.models.SVGP(
-                self.kernel,
+                self._kernel,
                 gpf.likelihoods.Gaussian(),
                 self.x_inducing,
                 num_data=x.shape[0],
@@ -182,3 +192,37 @@ class SVGPModel(BaseOutputModel):
 
     def print(self):
         print(self)
+
+
+class LocalSVGPModel(OutputModelMixin, BaseOutputModel):
+    def __init__(
+        self,
+        kernel,
+        window=LocalSVGPConst.X_WINDOW,
+        window_targets=LocalSVGPConst.WINDOW_FRACTION,
+        normalization=LocalSVGPConst.NORMALIZATION,
+        clipping=LocalSVGPConst.CLIPPING,
+    ):
+        super(LocalSVGPModel, self).__init__(
+            normalization=normalization, clipping=clipping
+        )
+
+        self._kernel = kernel
+        self.window = window
+        self.window_targets = window_targets
+
+    def __call__(self, x):
+        del x
+        return 0
+
+    def fit(self, x, y, verbose=False):
+        self._compute_normalization_values(x, y)
+        x = normalize(x.copy(), self.x_mean, self.x_std)
+        y = normalize(y.copy(), self.y_mean, self.y_std)
+
+        if self.clipping:
+            clip_indices = clipping_indices(y)
+            x, y = x[clip_indices, :], y[clip_indices]
+
+        x = np.atleast_2d(x)
+        y = y.reshape(-1, 1)

@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 import tsipy.correction
+import tsipy.fusion
 from tsipy.correction import (
     ExposureMethod,
     compute_exposure,
@@ -14,7 +15,6 @@ from tsipy.correction import (
     SignalGenerator,
 )
 from tsipy.fusion import (
-    SVGPModel,
     MultiWhiteKernel,
     build_sensor_labels,
     build_output_labels,

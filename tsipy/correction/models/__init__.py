@@ -1,1 +1,1 @@
-from tsipy.correction.models.models import *
+from .models import *

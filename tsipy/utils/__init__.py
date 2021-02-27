@@ -1,1 +1,1 @@
-from tsipy.utils.base import *
+from .base import *

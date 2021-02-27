@@ -4,16 +4,6 @@ import numpy as np
 
 
 def normalize(x, mean, std):
-    """
-
-    Args:
-        x:
-        mean:
-        std:
-
-    Returns:
-
-    """
     if isinstance(x, Real) or len(x.shape) <= 1:
         y = (x - mean) / std
     else:

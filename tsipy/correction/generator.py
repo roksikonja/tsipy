@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-from tsipy.correction.exposure import ExposureMethod, compute_exposure
-from tsipy.correction.models import ExpModel
+from .exposure import ExposureMethod, compute_exposure
+from .models import ExpModel
 
 
 class GeneratorConstants:
@@ -101,7 +101,6 @@ class SignalGenerator(object):
 
     @staticmethod
     def _brownian(n, dt, std_scale):
-        # x = np.random.normal(loc=0.0, scale=std_scale * np.sqrt(dt), size=(n, ))
         x = norm.rvs(size=(n,), scale=std_scale * np.sqrt(dt), loc=0.0)
         return np.cumsum(x, axis=-1)
 

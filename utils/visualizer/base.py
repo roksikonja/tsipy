@@ -1,7 +1,7 @@
 import matplotlib as mpl
 from matplotlib import style
 
-from utils.constants import Constants as Const
+from ..constants import Constants as Const
 
 
 class Visualizer:

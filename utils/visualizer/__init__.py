@@ -1,4 +1,4 @@
-from utils.visualizer.base import *
-from utils.visualizer.plot import *
+from .base import *
+from .plot import *
 
 visualizer = Visualizer()

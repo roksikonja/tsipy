@@ -7,7 +7,7 @@ import pandas as pd
 import scipy.signal
 import tensorflow as tf
 
-import tsipy.correction
+import tsipy.fusion
 from tsipy.fusion import (
     MultiWhiteKernel,
     build_sensor_labels,
@@ -107,7 +107,7 @@ if __name__ == "__main__":
 
     t_out = t_a
     t_out_labels = build_output_labels(t_out)
-    t_out = concatenate_labels(t_out, t_out_labels)
+    t_out = concatenate_labels(t_out, t_out_labels, sort_axis=0)
 
     pprint("t_out_labels", t_out_labels.shape)
     pprint("t_out", t_out.shape)

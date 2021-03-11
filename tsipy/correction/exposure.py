@@ -8,7 +8,21 @@ class ExposureMethod(Enum):
     EXPOSURE_SUM = auto()
 
 
-def compute_exposure(x, method, x_mean=1.0):
+def load_exposure_method(method):
+    if isinstance(method, ExposureMethod):
+        return method
+    elif isinstance(method, str):
+        if method == "exposure_sum":
+            return ExposureMethod.EXPOSURE_SUM
+        elif method == "num_measurements":
+            return ExposureMethod.NUM_MEASUREMENTS
+
+    raise ValueError("Invalid exposure method.")
+
+
+def compute_exposure(x, method="num_measurements", x_mean=1.0):
+    method = load_exposure_method(method)
+
     if method == ExposureMethod.NUM_MEASUREMENTS:
         x = ~np.isnan(x)
         x = x.astype(np.float)

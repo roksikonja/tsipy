@@ -8,17 +8,23 @@ class CorrectionMethod(Enum):
     CORRECT_BOTH = auto()
 
 
+def load_correction_method(method):
+    if isinstance(method, CorrectionMethod):
+        return method
+    elif isinstance(method, str):
+        if method == "correct_one":
+            return CorrectionMethod.CORRECT_ONE
+        elif method == "correct_both":
+            return CorrectionMethod.CORRECT_BOTH
+
+    raise ValueError("Invalid correction method.")
+
+
 def correct_degradation(
-    t_m,
-    a_m,
-    e_a_m,
-    b_m,
-    e_b_m,
-    model,
-    method=CorrectionMethod.CORRECT_ONE,
-    verbose=False,
-    **kwargs
+    t_m, a_m, e_a_m, b_m, e_b_m, model, method="correct_one", verbose=False, **kwargs
 ):
+    method = load_correction_method(method)
+
     model.convex = True if method == CorrectionMethod.CORRECT_ONE else False
 
     if method == CorrectionMethod.CORRECT_ONE:

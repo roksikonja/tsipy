@@ -56,3 +56,72 @@ def find_nearest_indices(sorted_values, sorted_targets) -> np.ndarray:
 
     indices = np.array(indices)
     return indices
+
+
+def clipping_indices(x, n_std=5):
+    """
+    Return clip indices in x_mean - n_std * x_std >= x or x >= x_mean + n_std * x_std.
+    """
+    clip_mean, clip_std = np.mean(x), np.std(x)
+    lower_indices = np.greater_equal(x, clip_mean - n_std * clip_std)
+    upper_indices = np.less_equal(x, clip_mean + n_std * clip_std)
+
+    clip_indices = np.logical_and(lower_indices, upper_indices)
+    return clip_indices
+
+
+def closest_binary_search(array, value):
+    left, right = 0, len(array) - 1
+    best_id = left
+
+    if value == float("inf"):
+        return right
+    elif value == -float("inf"):
+        return left
+
+    while left <= right:
+        middle = left + (right - left) // 2
+        if array[middle] < value:
+            left = middle + 1
+        elif array[middle] > value:
+            right = middle - 1
+        else:
+            best_id = middle
+            break
+
+        if abs(array[middle] - value) < abs(array[best_id] - value):
+            best_id = middle
+
+    return best_id
+
+
+def get_window_indices(x, x_start, x_end):
+    """Obtain the start and end indices in x that are in window [x_start, x_end].
+
+    Args:
+        x: Sorted 1-D array.
+        x_start: Window start.
+        x_end: Window end.
+
+    Returns: A tuple of a start and end index of x, such that
+        x_start <= x[x_start_id:x_end_id + 1] <= x_end.
+    """
+    x_start_id = closest_binary_search(array=x, value=x_start)
+    # handle a range of equal values
+    if x_start_id != 0:
+        while x[x_start_id - 1] == x_start:
+            x_start_id = x_start_id - 1
+
+            if x_start_id == 0:
+                break
+
+    x_end_id = closest_binary_search(array=x, value=x_end)
+    # handle a range of equal values
+    if x_end_id != (x.size - 1):
+        while x[x_end_id + 1] == x_end:
+            x_end_id = x_end_id + 1
+
+            if x_end_id == (x.size - 1):
+                break
+
+    return x_start_id, x_end_id

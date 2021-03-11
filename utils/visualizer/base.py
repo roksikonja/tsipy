@@ -30,13 +30,3 @@ class Visualizer:
         )
 
         mpl.rcParams["savefig.format"] = Const.OUT_FORMAT
-
-
-def pprint(*args, shift=40):
-    if len(args) < 2:
-        raise ValueError("At least two arguments for printing.")
-
-    format_str = (
-        "{:<" + str(shift) + "}" + "\t".join(["{}" for _ in range(len(args) - 1)])
-    )
-    print(format_str.format(*args))

@@ -1,14 +1,12 @@
 import argparse
-import datetime
 import os
 
 import gpflow as gpf
 import numpy as np
-import pandas as pd
-import scipy.signal
 import tensorflow as tf
 
 import tsipy.fusion
+from tsipy.correction.generator import SignalGenerator
 from tsipy.fusion.utils import (
     build_sensor_labels,
     build_output_labels,
@@ -16,13 +14,13 @@ from tsipy.fusion.utils import (
 )
 from tsipy.utils import pprint, pprint_block
 from utils import Constants as Const
-from utils.data import transform_time_to_unit, create_results_dir
-from utils.visualizer import plot_signals, plot_signals_and_confidence
+from utils.data import create_results_dir
+from utils.visualizer import plot_signals_and_confidence, plot_signals
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--experiment_name", default="exp_acrim", type=str)
+    parser.add_argument("--experiment_name", default="demo_fusion", type=str)
 
     # Fusion Model
     parser.add_argument("--fusion_model", default="svgp", type=str)
@@ -32,8 +30,8 @@ def parse_arguments():
     parser.add_argument("--max_iter", default=8000, type=int)
 
     # Local GP
-    parser.add_argument("--pred_window", default=2.0, type=float)
-    parser.add_argument("--fit_window", default=6.0, type=float)
+    parser.add_argument("--pred_window", default=0.2, type=float)
+    parser.add_argument("--fit_window", default=0.5, type=float)
 
     # Visualize
     parser.add_argument("-figure_show", action="store_true")
@@ -51,96 +49,66 @@ if __name__ == "__main__":
         Dataset
     """
     pprint_block("Dataset")
+    np.random.seed(Const.RANDOM_SEED)
+    tf.random.set_seed(Const.RANDOM_SEED)
+
     t_field = "t"
-    a_field, b_field, c_field = "a", "b", "c"
+    a_field = "a"
+    b_field = "b"
 
-    # Load data
-    data = pd.read_csv(
-        os.path.join("../data", "ACRIM1_SATIRE_HF.txt"),
-        delimiter=" ",
-        header=None,
-    )
-    data = data.rename(
-        columns={
-            0: t_field,
-            1: a_field,
-            2: b_field,
-            3: c_field,
-        }
-    )
-    t_org = data[t_field].values.copy()
-    data[t_field] = transform_time_to_unit(
-        data[t_field] - data[t_field][0],
-        x_label=Const.YEAR_UNIT,
-        start=datetime.datetime(1980, 1, 1),
-    )
+    t_a_field, t_b_field = t_field + "_a", t_field + "_b"
 
-    t = data[t_field].values
-    t_a = t_b = t_c = t
-    a = data[a_field].values
-    b = data[b_field].values
-    c = data[c_field].values
+    # Generate Brownian motion signal
+    signal_generator = SignalGenerator(add_degradation=False)
+    data = signal_generator.data
+
+    t_a = signal_generator.t[signal_generator.t_a_indices]
+    t_b = signal_generator.t[signal_generator.t_b_indices]
+    a = signal_generator.a[signal_generator.t_a_indices]
+    b = signal_generator.b[signal_generator.t_b_indices]
 
     print(data, "\n")
     pprint("- data", data.shape)
-    pprint("- " + t_field, t.shape)
+    pprint("- " + t_a_field, t_a.shape)
+    pprint("- " + t_b_field, t_b.shape)
     pprint("- " + a_field, a.shape, np.sum(~np.isnan(a)))
     pprint("- " + b_field, b.shape, np.sum(~np.isnan(b)))
-    pprint("- " + c_field, c.shape, np.sum(~np.isnan(c)))
 
     plot_signals(
         [
             (t_a, a, r"$a$", False),
             (t_b, b, r"$b$", False),
-            (t_c, c, r"$c$", False),
+            (signal_generator.t, signal_generator.s, r"$s$", False),
         ],
         results_dir=results_dir,
         title="signals",
         legend="upper right",
-        x_ticker=1,
-        show=args.figure_show,
-    )
-
-    freqs_a, psd_a = scipy.signal.welch(a, fs=1.0, nperseg=1024)
-    freqs_b, psd_b = scipy.signal.welch(b, fs=1.0, nperseg=1024)
-    freqs_c, psd_c = scipy.signal.welch(c, fs=1.0, nperseg=1024)
-    plot_signals(
-        [
-            (freqs_a, psd_a, r"$a$", False),
-            (freqs_b, psd_b, r"$b$", False),
-            (freqs_c, psd_c, r"$c$", False),
-        ],
-        results_dir=results_dir,
-        title="signals_psd",
-        legend="upper right",
-        log_scale_x=True,
         show=args.figure_show,
     )
 
     """
-        Data-fusion
+        Data fusion
     """
     pprint_block("Data Fusion")
     gpf.config.set_default_float(np.float64)
     np.random.seed(Const.RANDOM_SEED)
     tf.random.set_seed(Const.RANDOM_SEED)
 
-    labels, t_labels = build_sensor_labels((t_a, t_b, t_c))
-    s = np.hstack((a, b, c))
-    t = np.hstack((t_a, t_b, t_c))
-    t = concatenate_labels(t, t_labels)
+    labels, t_labels = build_sensor_labels((t_a, t_b))
+    s = np.hstack((a, b))
+    t = np.hstack((t_a, t_b))
+    t = concatenate_labels(t, t_labels, sort_axis=0)
 
-    t_out = t_a
+    t_out = signal_generator.t
     t_out_labels = build_output_labels(t_out)
-    # t has to be sorted!, sort_axis=0
-    t_out = concatenate_labels(t_out, t_out_labels, sort_axis=0)
+    t_out = concatenate_labels(t_out, t_out_labels)
 
-    pprint("labels", labels)
-    pprint("t_labels", t_labels.shape)
-    pprint("t", t.shape)
-    pprint("s", s.shape)
-    pprint("t_out_labels", t_out_labels.shape)
-    pprint("t_out", t_out.shape)
+    pprint("- labels", labels)
+    pprint("- t_labels", t_labels.shape)
+    pprint("- t", t.shape)
+    pprint("- s", s.shape)
+    pprint("- t_out_labels", t_out_labels.shape)
+    pprint("- t_out", t_out.shape)
 
     """
         Kernel
@@ -166,7 +134,6 @@ if __name__ == "__main__":
             normalization=False,
             clipping=False,
         )
-
         local_windows = tsipy.fusion.local_gp.create_windows(
             t,
             s,
@@ -177,11 +144,12 @@ if __name__ == "__main__":
             verbose=True,
         )
 
-        fusion_model = tsipy.fusion.LocalGPModel(
+        fusion_model = tsipy.fusion.local_gp.LocalGPModel(
             model=local_model, windows=local_windows
         )
 
         # Train
+        pprint_block("Training", level=2)
         fusion_model.fit(max_iter=args.max_iter, verbose=True)
 
         # Predict
@@ -193,7 +161,8 @@ if __name__ == "__main__":
         )
 
         # Train
-        fusion_model.fit(t, s, max_iter=args.max_iter)
+        pprint_block("Training", level=2)
+        fusion_model.fit(t, s, max_iter=args.max_iter, x_val=t_out, n_evals=5)
 
         # Predict
         pprint_block("Inference", level=2)
@@ -202,55 +171,41 @@ if __name__ == "__main__":
     """
         Composite
     """
+    pprint_block("Results")
     t_out = t_out[:, 0]
 
-    pprint("t_out", t_out.shape)
-    pprint("s_out_mean", s_out_mean.shape)
-    pprint("s_out_std", s_out_std.shape)
+    pprint("    - t_out", t_out.shape)
+    pprint("    - s_out_mean", s_out_mean.shape)
+    pprint("    - s_out_std", s_out_std.shape)
 
     fig, ax = plot_signals_and_confidence(
         [(t_out, s_out_mean, s_out_std, "SVGP")],
         results_dir=results_dir,
         title="signals_fused",
-        x_ticker=1,
     )
     ax.scatter(
         t_a,
         a,
-        label=r"$a$",
+        label="$a$",
         s=Const.MARKER_SIZE,
     )
     ax.scatter(
         t_b,
         b,
-        label=r"$b$",
-        s=Const.MARKER_SIZE,
-    )
-    ax.scatter(
-        t_c,
-        c,
-        label=r"$c$",
+        label="$b$",
         s=Const.MARKER_SIZE,
     )
     fig.savefig(os.path.join(results_dir, "signals_fused_points"))
     if args.figure_show:
         fig.show()
 
-    freqs_s, psd_s = scipy.signal.welch(s_out_mean, fs=1.0, nperseg=1024)
-    fig, ax = plot_signals(
-        [
-            (freqs_a, psd_a, r"$a$", False),
-            (freqs_b, psd_b, r"$b$", False),
-            (freqs_c, psd_c, r"$c$", False),
-            (freqs_s, psd_s, r"$s$", False),
-        ],
+    fig, ax = plot_signals_and_confidence(
+        [(t_out, s_out_mean, s_out_std, "SVGP")],
         results_dir=results_dir,
-        title="signals_fused_psd",
-        legend="upper right",
-        log_scale_x=True,
+        title="signals_fused_s",
     )
-    ax.set_xscale("log")
-    fig.savefig(os.path.join(results_dir, "signals_fused_psd_log"))
+    ax.plot(signal_generator.t, signal_generator.s, label=r"$s$")
+    fig.savefig(os.path.join(results_dir, "signals_fused_s"))
     if args.figure_show:
         fig.show()
 
@@ -276,16 +231,3 @@ if __name__ == "__main__":
             legend="lower right",
             show=args.figure_show,
         )
-
-    """
-        Save
-    """
-    data_results = pd.DataFrame(
-        {
-            t_field + "_org": t_org,
-            t_field: t_out,
-            "s_out_mean": s_out_mean,
-            "s_out_std": s_out_std,
-        }
-    )
-    data_results.to_csv(os.path.join(results_dir, "data_results.csv"))

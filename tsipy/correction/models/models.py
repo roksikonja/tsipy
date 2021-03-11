@@ -1,17 +1,11 @@
 from abc import ABC, abstractmethod
 from enum import Enum, auto
 
-import cvxpy as cp
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
 from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LinearRegression
-
-from .parameters import ExpConstants as ExpConst
-from .parameters import ExpLinConstants as ExpLinConst
-from .parameters import MRConstants as MRConst
-from .parameters import SMRConstants as SMRConst
 
 
 class DegradationModel(Enum):
@@ -22,13 +16,13 @@ class DegradationModel(Enum):
 
 
 def load_model(degradation_model):
-    if degradation_model == DegradationModel.EXP:
+    if degradation_model == DegradationModel.EXP or degradation_model == "exp":
         model = ExpModel()
-    elif degradation_model == DegradationModel.EXPLIN:
+    elif degradation_model == DegradationModel.EXPLIN or degradation_model == "exp_lin":
         model = ExpLinModel()
-    elif degradation_model == DegradationModel.MR:
+    elif degradation_model == DegradationModel.MR or degradation_model == "mr":
         model = MRModel()
-    elif degradation_model == DegradationModel.SMR:
+    elif degradation_model == DegradationModel.SMR or degradation_model == "smr":
         model = SmoothMRModel()
     else:
         raise ValueError("Invalid degradation model type.")
@@ -146,7 +140,7 @@ class ExpModel(BaseModel, ExpFamilyMixin):
 
     def fit(self, ratio_m, e_a_m):
         params, _ = curve_fit(
-            self._exp, e_a_m, ratio_m, p0=self.initial_params, maxfev=ExpConst.MAX_FEVAL
+            self._exp, e_a_m, ratio_m, p0=self.initial_params, maxfev=10000
         )
         self.params = params
 
@@ -179,7 +173,7 @@ class ExpLinModel(BaseModel, ExpFamilyMixin):
             e_a_m,
             ratio_m,
             p0=self.initial_params,
-            maxfev=ExpLinConst.MAX_FEVAL,
+            maxfev=10000,
         )
         self.params = params
 
@@ -190,10 +184,10 @@ class ExpLinModel(BaseModel, ExpFamilyMixin):
 class MRModel(BaseModel):
     def __init__(
         self,
-        y_max=MRConst.Y_MAX,
-        y_min=MRConst.Y_MIN,
-        increasing=MRConst.INCREASING,
-        out_of_bounds=MRConst.OUT_OF_BOUNDS,
+        y_max=1.0,
+        y_min=0.0,
+        increasing=False,
+        out_of_bounds="clip",
     ):
         self.name = "MR"
         self.convex = None
@@ -221,13 +215,12 @@ class MRModel(BaseModel):
 class SmoothMRModel(BaseModel):
     def __init__(
         self,
-        y_max=MRConst.Y_MAX,
-        y_min=MRConst.Y_MIN,
-        increasing=MRConst.INCREASING,
-        out_of_bounds=MRConst.OUT_OF_BOUNDS,
-        number_of_points=SMRConst.NUMBER_OF_POINTS,
-        lam=SMRConst.LAM,
-        solver=cp.ECOS_BB,
+        y_max=1.0,
+        y_min=0.0,
+        increasing=False,
+        out_of_bounds="clip",
+        number_of_points=999,
+        lam=1,
     ):
         self.name = "SmoothMR"
         self.convex = True
@@ -235,7 +228,6 @@ class SmoothMRModel(BaseModel):
         self.increasing = increasing
         self.number_of_points = number_of_points
         self.lam = lam
-        self.solver = solver
 
         self._model = None
         self._mr_model = IsotonicRegression(
@@ -261,6 +253,8 @@ class SmoothMRModel(BaseModel):
         self._model = self._solve_smooth_mr(x, y)
 
     def _solve_smooth_mr(self, x, y):
+        import cvxpy as cp
+
         mu = cp.Variable(self.number_of_points)
         objective = cp.Minimize(
             cp.sum_squares(mu - y) + self.lam * cp.sum_squares(mu[:-1] - mu[1:])
@@ -274,7 +268,7 @@ class SmoothMRModel(BaseModel):
             constraints.append(mu[:-2] + mu[2:] >= 2 * mu[1:-1])
 
         model = cp.Problem(objective, constraints)
-        model.solve(solver=self.solver)
+        model.solve(solver=cp.ECOS_BB)
 
         model = interp1d(x, mu.value, fill_value="extrapolate")
         return model

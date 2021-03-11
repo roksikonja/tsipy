@@ -1,5 +1,7 @@
 import numpy as np
 
+from ..utils import pprint
+
 
 def correct_one(
     t_m,
@@ -47,7 +49,7 @@ def correct_one(
         i = i + 1
 
     if verbose:
-        print(f"corrected in {i} iterations")
+        pprint(f"    - Corrected in {i} iterations")
 
     return a_m_c, b_m_c, model, history
 

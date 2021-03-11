@@ -8,18 +8,23 @@ import scipy.signal
 import tensorflow as tf
 
 import tsipy.fusion
-from tsipy.fusion import (
-    MultiWhiteKernel,
+from tsipy.fusion.utils import (
     build_sensor_labels,
     build_output_labels,
     concatenate_labels,
 )
+from tsipy.utils import pprint, pprint_block
 from utils import Constants as Const
 from utils.data import transform_time_to_unit, create_results_dir
-from utils.visualizer import pprint, plot_signals, plot_signals_and_confidence
+from utils.visualizer import plot_signals, plot_signals_and_confidence
 
 if __name__ == "__main__":
     results_dir = create_results_dir("../results", "exp-acrim-erbs")
+
+    """
+        Dataset
+    """
+    pprint_block("Dataset")
     t_field = "t"
     a_field, b_field, c_field = "a", "b", "c"
 
@@ -51,8 +56,12 @@ if __name__ == "__main__":
     b = data[b_field].values
     c = data[c_field].values
 
-    pprint("data", data.shape)
-    print(data.head().to_string() + "\n")
+    print(data, "\n")
+    pprint("- data", data.shape)
+    pprint("- " + t_field, t.shape)
+    pprint("- " + a_field, a.shape, np.sum(~np.isnan(a)))
+    pprint("- " + b_field, b.shape, np.sum(~np.isnan(b)))
+    pprint("- " + c_field, c.shape, np.sum(~np.isnan(c)))
 
     fig, _ = plot_signals(
         [
@@ -64,7 +73,6 @@ if __name__ == "__main__":
         title="signals",
         legend="upper right",
         x_ticker=1,
-        tight_layout=True,
     )
     fig.show()
 
@@ -80,7 +88,6 @@ if __name__ == "__main__":
         results_dir=results_dir,
         title="signals_psd",
         legend="upper right",
-        tight_layout=True,
         log_scale_x=True,
     )
     fig.show()
@@ -88,42 +95,35 @@ if __name__ == "__main__":
     """
         Data-fusion
     """
+    pprint_block("Data Fusion")
     gpf.config.set_default_float(np.float64)
     np.random.seed(Const.RANDOM_SEED)
     tf.random.set_seed(Const.RANDOM_SEED)
-
-    pprint("t_a", t_a.shape, "a", a.shape)
-    pprint("t_b", t_b.shape, "b", b.shape)
-    pprint("t_c", t_c.shape, "c", c.shape)
 
     labels, t_labels = build_sensor_labels((t_a, t_b, t_c))
     s = np.hstack((a, b, c))
     t = np.hstack((t_a, t_b, t_c))
     t = concatenate_labels(t, t_labels)
 
-    pprint("labels", labels)
-    pprint("t_labels", t_labels.shape)
-    pprint("t", t.shape)
-    pprint("s", s.shape)
-
     t_out = t_a
     t_out_labels = build_output_labels(t_out)
     t_out = concatenate_labels(t_out, t_out_labels, sort_axis=0)
 
-    pprint("t_out_labels", t_out_labels.shape)
-    pprint("t_out", t_out.shape)
+    pprint("- labels", labels)
+    pprint("- t_labels", t_labels.shape)
+    pprint("- t", t.shape)
+    pprint("- s", s.shape)
+    pprint("- t_out_labels", t_out_labels.shape)
+    pprint("- t_out", t_out.shape)
 
     """
         Kernel
     """
     # Signal kernel
-    # matern_kernel = gpf.kernels.Matern52(active_dims=[0])  # Kernel for time dimension
-    # matern_kernel = gpf.kernels.Matern32(active_dims=[0])  # Kernel for time dimension
     matern_kernel = gpf.kernels.Matern12(active_dims=[0])  # Kernel for time dimension
 
     # Noise kernel
-    # white_kernel = gpf.kernels.White(active_dims=[1])
-    white_kernel = MultiWhiteKernel(
+    white_kernel = tsipy.fusion.kernels.MultiWhiteKernel(
         labels=labels, active_dims=[1]
     )  # Kernel for sensor dimension
 
@@ -133,10 +133,10 @@ if __name__ == "__main__":
     """
         Gaussian Process Model
     """
-    fusion_model = tsipy.fusion.models.SVGPModel(kernel=kernel, num_inducing_pts=500)
+    fusion_model = tsipy.fusion.SVGPModel(kernel=kernel, num_inducing_pts=500)
 
     # Train
-    fusion_model.fit(t, s, max_iter=10000, verbose=True, x_val=t_out, n_evals=10)
+    fusion_model.fit(t, s, max_iter=2000, verbose=True, x_val=t_out, n_evals=10)
 
     """
         Composite
@@ -145,9 +145,9 @@ if __name__ == "__main__":
     s_out_mean, s_out_std = fusion_model(t_out)
     t_out = t_out[:, 0]
 
-    pprint("t_out", t_out.shape)
-    pprint("s_out_mean", s_out_mean.shape)
-    pprint("s_out_std", s_out_std.shape)
+    pprint("- t_out", t_out.shape)
+    pprint("- s_out_mean", s_out_mean.shape)
+    pprint("- s_out_std", s_out_std.shape)
 
     fig, ax = plot_signals_and_confidence(
         [(t_out, s_out_mean, s_out_std, "SVGP")],
@@ -188,7 +188,6 @@ if __name__ == "__main__":
         results_dir=results_dir,
         title="signals_fused_psd",
         legend="upper right",
-        tight_layout=True,
         log_scale_x=True,
     )
     ax.set_xscale("log")
@@ -203,7 +202,6 @@ if __name__ == "__main__":
         results_dir=results_dir,
         title="iter-elbo",
         legend="lower right",
-        tight_layout=True,
     )
     fig.show()
 
@@ -220,7 +218,6 @@ if __name__ == "__main__":
             title="signals_fused_history",
             legend="lower right",
             x_ticker=1,
-            tight_layout=True,
         )
         fig.show()
 

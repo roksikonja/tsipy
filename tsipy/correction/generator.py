@@ -6,26 +6,23 @@ from .exposure import ExposureMethod, compute_exposure
 from .models import ExpModel
 
 
-class GeneratorConstants:
-    SIGNAL_LENGTH = 100000
-    DOWNSAMPLING_A = 0.9
-    DOWNSAMPLING_B = 0.2
-    STD_NOISE_A = 0.025
-    STD_NOISE_B = 0.015
-
-
 class SignalGenerator(object):
     def __init__(
         self,
-        length=GeneratorConstants.SIGNAL_LENGTH,
-        downsampling_a=GeneratorConstants.DOWNSAMPLING_A,
-        downsampling_b=GeneratorConstants.DOWNSAMPLING_B,
-        std_noise_a=GeneratorConstants.STD_NOISE_A,
-        std_noise_b=GeneratorConstants.STD_NOISE_B,
+        length=100000,
+        add_degradation=True,
+        add_noise=True,
+        downsampling_a=0.9,
+        downsampling_b=0.2,
+        std_noise_a=0.025,
+        std_noise_b=0.015,
         exposure_method=ExposureMethod.NUM_MEASUREMENTS,
         random_seed=0,
     ):
         np.random.seed(random_seed)
+
+        self.add_degradation = add_degradation
+        self.add_noise = add_noise
 
         self.downsampling_a = downsampling_a
         self.downsampling_b = downsampling_b
@@ -92,12 +89,14 @@ class SignalGenerator(object):
         )
 
         # Degrade signals
-        self.a[self.t_a_indices] *= d_a_nn
-        self.b[self.t_b_indices] *= d_b_nn
+        if self.add_degradation:
+            self.a[self.t_a_indices] *= d_a_nn
+            self.b[self.t_b_indices] *= d_b_nn
 
         # Add noise
-        self.a[self.t_a_indices] += noise_a_nn
-        self.b[self.t_b_indices] += noise_b_nn
+        if self.add_noise:
+            self.a[self.t_a_indices] += noise_a_nn
+            self.b[self.t_b_indices] += noise_b_nn
 
     @staticmethod
     def _brownian(n, dt, std_scale):

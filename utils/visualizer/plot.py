@@ -44,7 +44,8 @@ def plot_signals(
     signal_fiveplets,
     results_dir,
     title,
-    tight_layout=False,
+    tight_layout=True,
+    show=False,
     **kwargs,
 ):
     fig, ax = plt.subplots()
@@ -84,6 +85,9 @@ def plot_signals(
     if tight_layout:
         fig.tight_layout()
 
+    if show:
+        fig.show()
+
     if results_dir:
         fig.savefig(os.path.join(results_dir, title))
 
@@ -97,6 +101,7 @@ def plot_signals_and_confidence(
     confidence=0.95,
     alpha=0.5,
     tight_layout=False,
+    show=False,
     **kwargs,
 ):
     factor = norm.ppf(1 / 2 + confidence / 2)  # 0.95 % -> 1.959963984540054
@@ -122,6 +127,9 @@ def plot_signals_and_confidence(
     if tight_layout:
         fig.tight_layout()
 
+    if show:
+        fig.show()
+
     if results_dir:
         fig.savefig(os.path.join(results_dir, title))
 
@@ -137,6 +145,7 @@ def plot_signals_history(
     n_cols=2,
     fig_size=(12, 6),
     tight_layout=False,
+    show=False,
     **kwargs,
 ):
 
@@ -163,6 +172,9 @@ def plot_signals_history(
 
     if tight_layout:
         fig.tight_layout()
+
+    if show:
+        fig.show()
 
     if results_dir:
         fig.savefig(os.path.join(results_dir, title))

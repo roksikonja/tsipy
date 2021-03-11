@@ -1,32 +1,32 @@
+import argparse
+
 import numpy as np
 
 import tsipy.correction
-from tsipy.correction import (
-    ExposureMethod,
-    compute_exposure,
-    DegradationModel,
-    CorrectionMethod,
-    correct_degradation,
-    SignalGenerator,
-)
+from tsipy.utils import pprint, pformat, pprint_block
 from utils.data import create_results_dir
-from utils.visualizer import pprint, plot_signals, plot_signals_history
+from utils.visualizer import plot_signals, plot_signals_history
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--experiment_name", default="demo_degradation", type=str)
+
+    # Degradation correction
+    parser.add_argument("--degradation_model", default="mr", type=str)
+
+    # Visualize
+    parser.add_argument("-figure_show", action="store_true")
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
-    results_dir = create_results_dir("../results", "exp-degradation")
+    args = parse_arguments()
 
-    """
-        Parameters
-    """
-    exposure_method = ExposureMethod.NUM_MEASUREMENTS
-    correction_method = CorrectionMethod.CORRECT_ONE
-    degradation_model_type = DegradationModel.SMR
+    results_dir = create_results_dir("../results", args.experiment_name)
 
-    """
-        Dataset
-    """
     for i in range(5):
+        pprint_block(pformat("Experiment:", i))
         np.random.seed(i)
         seed_str = "-" + str(i)
 
@@ -39,30 +39,27 @@ if __name__ == "__main__":
         t_a_field, t_b_field = t_field + "_a", t_field + "_b"
         e_a_field, e_b_field = e_field + "_a", e_field + "_b"
 
-        signal_generator = SignalGenerator(
-            length=50000,
+        signal_generator = tsipy.correction.SignalGenerator(
+            add_noise=False,
             downsampling_a=0.99,
             downsampling_b=0.2,
-            std_noise_a=0.0,
-            std_noise_b=0.0,
             random_seed=i,
         )
         data = signal_generator.data
-
-        pprint("\t- data", data.shape)
-        print(data.head().to_string() + "\n")
 
         a = data[a_field].values
         b = data[b_field].values
         t = data[t_field].values
 
-        pprint("\t- " + t_field, t.shape)
-        pprint("\t- " + a_field, a.shape, np.sum(~np.isnan(a)))
-        pprint("\t- " + b_field, b.shape, np.sum(~np.isnan(b)))
+        print(data, "\n")
+        pprint("- data", data.shape)
+        pprint("- " + t_field, t.shape)
+        pprint("- " + a_field, a.shape, np.sum(~np.isnan(a)))
+        pprint("- " + b_field, b.shape, np.sum(~np.isnan(b)))
 
         # Compute exposure
-        e_a = compute_exposure(a, method=exposure_method)
-        e_b = compute_exposure(b, method=exposure_method)
+        e_a = tsipy.correction.compute_exposure(a)
+        e_b = tsipy.correction.compute_exposure(b)
         max_e = max(np.max(e_a), np.max(e_b))
         e_a, e_b = e_a / max_e, e_b / max_e
         data[e_a_field] = e_a
@@ -76,8 +73,8 @@ if __name__ == "__main__":
         a_nn, b_nn = data_a[a_field].values, data_b[b_field].values
         e_a_nn, e_b_nn = data_a[e_a_field].values, data_b[e_b_field].values
 
-        pprint("\t- " + t_a_field, t_a_nn.min(), t_a_nn.max())
-        pprint("\t- " + t_b_field, t_b_nn.min(), t_b_nn.max())
+        pprint("- " + t_a_field, t_a_nn.min(), t_a_nn.max())
+        pprint("- " + t_b_field, t_b_nn.min(), t_b_nn.max())
 
         # Mutual measurements
         data_m = data[[t_field, a_field, b_field, e_a_field, e_b_field]].dropna()
@@ -85,12 +82,12 @@ if __name__ == "__main__":
         a_m, b_m = data_m[a_field].values, data_m[b_field].values
         e_a_m, e_b_m = data_m[e_a_field].values, data_m[e_b_field].values
 
-        pprint("\t- " + a_field, a_m.shape, np.sum(~np.isnan(a_m)))
-        pprint("\t- " + b_field, b_m.shape, np.sum(~np.isnan(b_m)))
-        pprint("\t- " + e_a_field, e_a_m.shape)
-        pprint("\t- " + e_b_field, e_b_m.shape, "\n")
+        pprint("- " + a_field, a_m.shape, np.sum(~np.isnan(a_m)))
+        pprint("- " + b_field, b_m.shape, np.sum(~np.isnan(b_m)))
+        pprint("- " + e_a_field, e_a_m.shape)
+        pprint("- " + e_b_field, e_b_m.shape, "\n")
 
-        fig, _ = plot_signals(
+        plot_signals(
             [
                 (t_a_nn, a_nn, r"$a$", False),
                 (t_b_nn, b_nn, r"$b$", False),
@@ -99,24 +96,23 @@ if __name__ == "__main__":
             results_dir=results_dir,
             title="signals" + seed_str,
             legend="upper right",
-            tight_layout=True,
+            show=args.figure_show,
         )
-        fig.show()
 
         """
             Degradation correction
         """
-        degradation_model = tsipy.correction.load_model(degradation_model_type)
+        pprint_block("Degradation Correction", level=2)
+        degradation_model = tsipy.correction.load_model(args.degradation_model)
         degradation_model.initial_fit(a_m, b_m, e_a_m)
 
-        a_m_c, b_m_c, degradation_model, history = correct_degradation(
+        a_m_c, b_m_c, degradation_model, history = tsipy.correction.correct_degradation(
             t_m,
             a_m,
             e_a_m,
             b_m,
             e_b_m,
             model=degradation_model,
-            method=correction_method,
         )
 
         d_a_c = degradation_model(e_a_nn)
@@ -124,7 +120,12 @@ if __name__ == "__main__":
         a_c_nn = np.divide(a_nn, d_a_c)
         b_c_nn = np.divide(b_nn, d_b_c)
 
-        fig, _ = plot_signals(
+        """
+            Results
+        """
+        pprint_block("Results", level=2)
+
+        plot_signals(
             [
                 (t_m, a_m_c, r"$a_c$", False),
                 (t_m, b_m_c, r"$b_c$", False),
@@ -133,10 +134,10 @@ if __name__ == "__main__":
             results_dir=results_dir,
             title="signals_corrected" + seed_str,
             legend="upper right",
+            show=args.figure_show,
         )
-        fig.show()
 
-        fig, _ = plot_signals(
+        plot_signals(
             [
                 (t_a_nn, d_a_c, r"$d_c(e_a(t))$", False),
                 (t_b_nn, d_b_c, r"$d_c(e_b(t))$", False),
@@ -152,10 +153,10 @@ if __name__ == "__main__":
             results_dir=results_dir,
             title="degradation" + seed_str,
             legend="lower left",
+            show=args.figure_show,
         )
-        fig.show()
 
-        fig, _ = plot_signals_history(
+        plot_signals_history(
             t_m,
             [
                 [
@@ -177,6 +178,5 @@ if __name__ == "__main__":
             title="correction-history" + seed_str,
             n_rows=2,
             n_cols=2,
-            tight_layout=True,
+            show=args.figure_show,
         )
-        fig.show()

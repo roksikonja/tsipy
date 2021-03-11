@@ -1,19 +1,17 @@
 from abc import ABC, abstractmethod
-from enum import Enum, auto
 
 import gpflow as gpf
 import numpy as np
 import tensorflow as tf
 from gpflow.utilities.utilities import tabulate_module_summary, default_summary_fmt
 
-from .parameters import SVGPConstants as SVGPConst
-from .parameters import LocalSVGPConstants as LocalSVGPConst
-from ..utils import clipping_indices
-from ...utils import normalize, denormalize, find_nearest_indices
-
-
-class FusionModel(Enum):
-    SVGP = auto()
+from ...utils import (
+    normalize,
+    denormalize,
+    find_nearest_indices,
+    clipping_indices,
+    pprint,
+)
 
 
 class BaseOutputModel(ABC):
@@ -26,7 +24,7 @@ class BaseOutputModel(ABC):
         pass
 
 
-class OutputModelMixin:
+class NormalizationClippingMixin:
     def __init__(self, normalization, clipping):
         self.normalization = normalization
         self.clipping = clipping
@@ -49,14 +47,14 @@ class OutputModelMixin:
             self.y_std = 1.0
 
 
-class SVGPModel(OutputModelMixin, BaseOutputModel):
+class SVGPModel(NormalizationClippingMixin, BaseOutputModel):
     def __init__(
         self,
         kernel,
-        num_inducing_pts=SVGPConst.NUM_INDUCING_PTS,
-        inducing_trainable=SVGPConst.TRAIN_INDUCING_PTS,
-        normalization=SVGPConst.NORMALIZATION,
-        clipping=SVGPConst.CLIPPING,
+        num_inducing_pts=1000,
+        inducing_trainable=False,
+        normalization=True,
+        clipping=True,
     ):
         super(SVGPModel, self).__init__(normalization=normalization, clipping=clipping)
         self._model = None
@@ -114,9 +112,10 @@ class SVGPModel(OutputModelMixin, BaseOutputModel):
         x,
         y,
         x_inducing=None,
-        batch_size=SVGPConst.BATCH_SIZE,
-        max_iter=SVGPConst.MAX_ITER,
-        learning_rate=SVGPConst.LEARNING_RATE,
+        batch_size=200,
+        max_iter=10000,
+        learning_rate=0.005,
+        n_prints=100,
         x_val=None,
         n_evals=5,
         verbose=False,
@@ -139,15 +138,13 @@ class SVGPModel(OutputModelMixin, BaseOutputModel):
 
         self._build_model(x, x_inducing)
 
-        if verbose:
-            self.print()
-
         # Train
         self.train(
             dataset=dataset,
             batch_size=batch_size,
             max_iter=max_iter,
             learning_rate=learning_rate,
+            n_prints=n_prints,
             x_val=x_val,
             n_evals=n_evals,
         )
@@ -158,9 +155,9 @@ class SVGPModel(OutputModelMixin, BaseOutputModel):
     def train(
         self,
         dataset,
-        batch_size,
-        max_iter,
-        learning_rate,
+        batch_size=200,
+        max_iter=10000,
+        learning_rate=0.005,
         n_prints=100,
         x_val=None,
         n_evals=5,
@@ -174,16 +171,23 @@ class SVGPModel(OutputModelMixin, BaseOutputModel):
         def train_step():
             optimizer.minimize(training_loss, self._model.trainable_variables)
 
+        i = None
+        elbo = None
         for i in range(max_iter):
             train_step()
+            elbo = -training_loss().numpy()
+            iter_elbo.append(elbo)
+
             if i % (max_iter // n_prints) == 0:
-                elbo = -training_loss().numpy()
-                iter_elbo.append(elbo)
-                print("Step {:>6}/{}: {:>30.3f}".format(i, max_iter, elbo))
+                pprint(
+                    "    - Step {:>6}/{}:".format(i, max_iter), "{:.3f}".format(elbo)
+                )
 
             if i % (max_iter // n_evals) == 0 and x_val is not None:
                 y_out_mean, y_out_std = self(x_val)
                 self.history.append((y_out_mean, y_out_std))
+
+        pprint("    - Step {:>6}/{}:".format(i, max_iter), "{:.3f}".format(elbo))
 
         self.iter_elbo = np.array(iter_elbo)
 
@@ -192,37 +196,3 @@ class SVGPModel(OutputModelMixin, BaseOutputModel):
 
     def print(self):
         print(self)
-
-
-class LocalSVGPModel(OutputModelMixin, BaseOutputModel):
-    def __init__(
-        self,
-        kernel,
-        window=LocalSVGPConst.X_WINDOW,
-        window_targets=LocalSVGPConst.WINDOW_FRACTION,
-        normalization=LocalSVGPConst.NORMALIZATION,
-        clipping=LocalSVGPConst.CLIPPING,
-    ):
-        super(LocalSVGPModel, self).__init__(
-            normalization=normalization, clipping=clipping
-        )
-
-        self._kernel = kernel
-        self.window = window
-        self.window_targets = window_targets
-
-    def __call__(self, x):
-        del x
-        return 0
-
-    def fit(self, x, y, verbose=False):
-        self._compute_normalization_values(x, y)
-        x = normalize(x.copy(), self.x_mean, self.x_std)
-        y = normalize(y.copy(), self.y_mean, self.y_std)
-
-        if self.clipping:
-            clip_indices = clipping_indices(y)
-            x, y = x[clip_indices, :], y[clip_indices]
-
-        x = np.atleast_2d(x)
-        y = y.reshape(-1, 1)

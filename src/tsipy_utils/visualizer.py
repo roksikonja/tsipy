@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Union, Optional, NoReturn
 from typing import Tuple
 
 import matplotlib as mpl
@@ -69,7 +69,8 @@ def configure_plot(
     y_label: str = None,
     log_scale_x: bool = False,
     log_scale_y: bool = False,
-):
+) -> NoReturn:
+    """Helper function for configuring axes parameters."""
     if x_ticker:
         ax.xaxis.set_major_locator(ticker.MultipleLocator(x_ticker))
 
@@ -105,6 +106,7 @@ def plot_signals(
     show: bool = False,
     **kwargs,
 ) -> Tuple[Figure, Axes]:
+    """Helper function for plotting signals."""
     fig, ax = plt.subplots()
     for signal_fiveplet in signal_fiveplets:
         if not signal_fiveplet:
@@ -159,6 +161,7 @@ def plot_signals_and_confidence(
     show: bool = False,
     **kwargs,
 ) -> Tuple[Figure, Axes]:
+    """Helper function for plotting signal mean and confidence interval."""
     factor = norm.ppf(1 / 2 + confidence / 2)  # 0.95 % -> 1.959963984540054
 
     fig, ax = plt.subplots()
@@ -185,7 +188,7 @@ def plot_signals_and_confidence(
     if show:
         fig.show()
 
-    if results_dir:
+    if results_dir is not None and title is not None:
         fig.savefig(os.path.join(results_dir, title))
 
     return fig, ax
@@ -203,6 +206,7 @@ def plot_signals_history(
     show: bool = False,
     **kwargs,
 ) -> Tuple[Figure, Axes]:
+    """Helper function for plotting degradation correction history."""
     fig, axs = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=fig_size)
 
     for i, signals in enumerate(signals_history):
@@ -230,7 +234,7 @@ def plot_signals_history(
     if show:
         fig.show()
 
-    if results_dir:
+    if results_dir is not None and title is not None:
         fig.savefig(os.path.join(results_dir, title))
 
     return fig, axs

@@ -38,7 +38,7 @@ def parse_arguments():
     parser.add_argument("--max_iter", default=8000, type=int)
 
     # Visualize
-    parser.add_argument("-figure_show", action="store_false")
+    parser.add_argument("-figure_show", action="store_true")
     return parser.parse_args()
 
 
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     pprint("- b_m", b_m.shape, level=1)
     pprint("- e_b_m", e_b_m.shape, level=1)
 
-    fig, _ = plot_signals(
+    plot_signals(
         [
             (t_a_nn, a_nn, r"$a$", False),
             (t_b_nn, b_nn, r"$b$", False),
@@ -118,9 +118,8 @@ if __name__ == "__main__":
         legend="upper right",
         x_ticker=4,
         y_lim=[1357, 1369],
+        show=args.figure_show,
     )
-    if args.figure_show:
-        fig.show()
 
     pprint_block("Degradation Correction", level=1)
     degradation_model = tsipy.correction.load_model(args.degradation_model)
@@ -141,7 +140,7 @@ if __name__ == "__main__":
     a_c_nn = np.divide(a_nn, d_a_c)
     b_c_nn = np.divide(b_nn, d_b_c)
 
-    fig, _ = plot_signals(
+    plot_signals(
         [
             (t_m, a_m_c, r"$a_c$", False),
             (t_m, b_m_c, r"$b_c$", False),
@@ -150,11 +149,10 @@ if __name__ == "__main__":
         title="signals_corrected",
         legend="upper right",
         x_ticker=4,
+        show=args.figure_show,
     )
-    if args.figure_show:
-        fig.show()
 
-    fig, _ = plot_signals(
+    plot_signals(
         [
             (t_a_nn, d_a_c, r"$d(e_a(t))$", False),
             (t_b_nn, d_b_c, r"$d(e_b(t))$", False),
@@ -163,11 +161,10 @@ if __name__ == "__main__":
         title="degradation",
         legend="lower left",
         x_ticker=4,
+        show=args.figure_show,
     )
-    if args.figure_show:
-        fig.show()
 
-    fig, _ = plot_signals_history(
+    plot_signals_history(
         t_m,
         [
             [
@@ -181,9 +178,9 @@ if __name__ == "__main__":
         n_rows=2,
         n_cols=2,
         x_ticker=4,
+        tight_layout=True,
+        show=args.figure_show,
     )
-    if args.figure_show:
-        fig.show()
 
     pprint_block("Data Fusion", level=1)
     gpf.config.set_default_float(np.float64)
@@ -237,8 +234,6 @@ if __name__ == "__main__":
         x_ticker=4,
         y_lim=[1362, 1369],
     )
-    if args.figure_show:
-        fig.show()
     indices_a = downsampling_indices_by_max_points(
         t_a_nn, max_points=20_000
     )  # Downsample signal a for plotting
@@ -264,6 +259,5 @@ if __name__ == "__main__":
         results_dir=results_dir,
         title="iter_elbo",
         legend="lower right",
+        show=args.figure_show,
     )
-    if args.figure_show:
-        fig.show()

@@ -173,15 +173,9 @@ if __name__ == "__main__":
     pprint("- t_out_labels", t_out_labels.shape, level=1)
     pprint("- t_out", t_out.shape, level=1)
 
-    # Signal kernel
-    matern_kernel = gpf.kernels.Matern12(active_dims=[0])  # Kernel for time dimension
-
-    # Noise kernel
-    white_kernel = tsipy.fusion.kernels.MultiWhiteKernel(
-        labels=labels, active_dims=[1]
-    )  # Kernel for sensor dimension
-
-    # Kernel composite
+    # Kernel
+    matern_kernel = gpf.kernels.Matern12(active_dims=[0])
+    white_kernel = tsipy.fusion.kernels.MultiWhiteKernel(labels=labels, active_dims=[1])
     kernel = matern_kernel + white_kernel
 
     if args.fusion_model == "localgp":

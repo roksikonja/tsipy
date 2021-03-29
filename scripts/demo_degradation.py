@@ -152,5 +152,6 @@ if __name__ == "__main__":
         title="correction_history",
         n_rows=2,
         n_cols=2,
+        tight_layout=True,
         show=args.figure_show,
     )

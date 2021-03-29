@@ -1,7 +1,9 @@
-include pyproject.toml
-
 include README.md
-include LICENSE.txt
-
 include setup.py
 include setup.cfg
+include pyproject.toml
+include LICENSE.txt
+include MANIFEST.in
+recursive-include docs *
+graft src
+graft tests

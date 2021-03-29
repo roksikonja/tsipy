@@ -10,7 +10,7 @@ import tensorflow as tf
 
 import tsipy.fusion
 from tsipy.fusion.utils import (
-    build_sensor_labels,
+    build_labels,
     build_output_labels,
     concatenate_labels,
 )
@@ -122,10 +122,10 @@ if __name__ == "__main__":
     """
     pprint_block("Data Fusion")
     gpf.config.set_default_float(np.float64)
-    np.random.seed(Const.RANDOM_SEED)
-    tf.random.set_seed(Const.RANDOM_SEED)
+    np.random.seed(0)
+    tf.random.set_seed(0)
 
-    labels, t_labels = build_sensor_labels((t_a, t_b, t_c))
+    labels, t_labels = build_labels((t_a, t_b, t_c))
     s = np.hstack((a, b, c))
     t = np.hstack((t_a, t_b, t_c))
     t = concatenate_labels(t, t_labels)
@@ -218,19 +218,19 @@ if __name__ == "__main__":
         t_a,
         a,
         label=r"$a$",
-        s=Const.MARKER_SIZE,
+        s=3,
     )
     ax.scatter(
         t_b,
         b,
         label=r"$b$",
-        s=Const.MARKER_SIZE,
+        s=3,
     )
     ax.scatter(
         t_c,
         c,
         label=r"$c$",
-        s=Const.MARKER_SIZE,
+        s=3,
     )
     fig.savefig(os.path.join(results_dir, "signals_fused_points"))
     if args.figure_show:

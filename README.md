@@ -30,6 +30,9 @@ Demos can be found in ```./scripts```.
 
     python ./scripts/demo_generator.py
 
+    # or run batch file
+    ./scripts/run.bat
+
 
 ## Cite
 

@@ -7,12 +7,11 @@ import tensorflow as tf
 import tsipy.correction
 import tsipy.fusion
 from tsipy.fusion.utils import (
-    build_sensor_labels,
+    build_labels,
     build_output_labels,
     concatenate_labels,
 )
 from tsipy.utils import pprint, pprint_block
-from utils import Constants as Const
 from utils.data import (
     create_results_dir,
     load_data,
@@ -33,14 +32,14 @@ if __name__ == "__main__":
     """
     exposure_method = tsipy.correction.ExposureMethod.NUM_MEASUREMENTS
     correction_method = tsipy.correction.CorrectionMethod.CORRECT_ONE
-    degradation_model = tsipy.correction.models.DegradationModel.EXPLIN
+    degradation_model = "explin"
 
     """
         Dataset
     """
     pprint_block("Virgo Dataset")
-    np.random.seed(Const.RANDOM_SEED)
-    tf.random.set_seed(Const.RANDOM_SEED)
+    np.random.seed(0)
+    tf.random.set_seed(0)
 
     t_field = "t"
     e_field = "e"
@@ -102,7 +101,7 @@ if __name__ == "__main__":
         results_dir=results_dir,
         title="signals",
         legend="upper right",
-        x_ticker=Const.X_TICKER,
+        x_ticker=4,
         y_lim=[1357, 1369],
     )
     fig.show()
@@ -138,7 +137,7 @@ if __name__ == "__main__":
         results_dir=results_dir,
         title="signals_corrected",
         legend="upper right",
-        x_ticker=Const.X_TICKER,
+        x_ticker=4,
     )
     fig.show()
 
@@ -150,7 +149,7 @@ if __name__ == "__main__":
         results_dir=results_dir,
         title="degradation",
         legend="lower left",
-        x_ticker=Const.X_TICKER,
+        x_ticker=4,
     )
     fig.show()
 
@@ -167,7 +166,7 @@ if __name__ == "__main__":
         title="correction-history",
         n_rows=2,
         n_cols=2,
-        x_ticker=Const.X_TICKER,
+        x_ticker=4,
     )
     fig.show()
 
@@ -176,15 +175,15 @@ if __name__ == "__main__":
     """
     pprint_block("Data Fusion")
     gpf.config.set_default_float(np.float64)
-    np.random.seed(Const.RANDOM_SEED)
-    tf.random.set_seed(Const.RANDOM_SEED)
+    np.random.seed(0)
+    tf.random.set_seed(0)
 
     pprint("- t_a_nn", t_a_nn.shape)
     pprint("- t_b_nn", t_b_nn.shape)
     pprint("- a_c_nn", a_c_nn.shape)
     pprint("- b_c_nn", b_c_nn.shape)
 
-    labels, t_labels = build_sensor_labels((t_a_nn, t_b_nn))
+    labels, t_labels = build_labels((t_a_nn, t_b_nn))
     s = np.hstack((a_c_nn, b_c_nn))
     t = np.hstack((t_a_nn, t_b_nn))
     t = concatenate_labels(t, t_labels, sort_axis=0)
@@ -237,7 +236,7 @@ if __name__ == "__main__":
         [(t_out, s_out_mean, s_out_std, "SVGP")],
         results_dir=results_dir,
         title="signals_fused",
-        x_ticker=Const.X_TICKER,
+        x_ticker=4,
         y_lim=[1362, 1369],
     )
     fig.show()
@@ -248,13 +247,13 @@ if __name__ == "__main__":
         t_a_nn[indices_a],
         a_c_nn[indices_a],
         label=r"$a$",
-        s=Const.MARKER_SIZE,
+        s=3,
     )
     ax.scatter(
         t_b_nn,
         b_c_nn,
         label=r"$b$",
-        s=Const.MARKER_SIZE,
+        s=3,
     )
     fig.show()
     fig.savefig(os.path.join(results_dir, "signals_fused_points"))

@@ -1,11 +1,10 @@
 import argparse
 
 import numpy as np
-
 import tsipy.correction
 from tsipy.utils import pprint, pformat, pprint_block
-from utils.data import create_results_dir
-from utils.visualizer import plot_signals, plot_signals_history
+from tsipy_utils.data import create_results_dir
+from tsipy_utils.visualizer import plot_signals, plot_signals_history
 
 
 def parse_arguments():
@@ -26,7 +25,7 @@ if __name__ == "__main__":
     results_dir = create_results_dir("../results", args.experiment_name)
 
     for i in range(5):
-        pprint_block(pformat("Experiment:", i))
+        pprint_block(pformat("Experiment:", i), color="green")
         np.random.seed(i)
         seed_str = "-" + str(i)
 
@@ -51,12 +50,6 @@ if __name__ == "__main__":
         b = data[b_field].values
         t = data[t_field].values
 
-        print(data, "\n")
-        pprint("- data", data.shape)
-        pprint("- " + t_field, t.shape)
-        pprint("- " + a_field, a.shape, np.sum(~np.isnan(a)))
-        pprint("- " + b_field, b.shape, np.sum(~np.isnan(b)))
-
         # Compute exposure
         e_a = tsipy.correction.compute_exposure(a)
         e_b = tsipy.correction.compute_exposure(b)
@@ -73,19 +66,25 @@ if __name__ == "__main__":
         a_nn, b_nn = data_a[a_field].values, data_b[b_field].values
         e_a_nn, e_b_nn = data_a[e_a_field].values, data_b[e_b_field].values
 
-        pprint("- " + t_a_field, t_a_nn.min(), t_a_nn.max())
-        pprint("- " + t_b_field, t_b_nn.min(), t_b_nn.max())
-
         # Mutual measurements
         data_m = data[[t_field, a_field, b_field, e_a_field, e_b_field]].dropna()
         t_m = data_m[t_field].values
         a_m, b_m = data_m[a_field].values, data_m[b_field].values
         e_a_m, e_b_m = data_m[e_a_field].values, data_m[e_b_field].values
 
-        pprint("- " + a_field, a_m.shape, np.sum(~np.isnan(a_m)))
-        pprint("- " + b_field, b_m.shape, np.sum(~np.isnan(b_m)))
-        pprint("- " + e_a_field, e_a_m.shape)
-        pprint("- " + e_b_field, e_b_m.shape, "\n")
+        pprint_block("Data", level=2, color="yellow")
+        pprint("Time", level=0)
+        pprint("- " + t_field, t.shape, level=1)
+
+        pprint("Signal", level=0)
+        pprint("- " + a_field, a.shape, np.sum(~np.isnan(a)), level=1)
+        pprint(f"- {a_field}_m", a_m.shape, level=1)
+        pprint("- " + e_a_field, e_a_m.shape, level=1)
+
+        pprint("Signal", level=0)
+        pprint("- " + b_field, b.shape, np.sum(~np.isnan(b)), level=1)
+        pprint(f"- {b_field}_m", b_m.shape, level=1)
+        pprint("- " + e_b_field, e_b_m.shape, "\n", level=1)
 
         plot_signals(
             [
@@ -94,15 +93,12 @@ if __name__ == "__main__":
                 (signal_generator.t, signal_generator.s, r"$s$", False),
             ],
             results_dir=results_dir,
-            title="signals" + seed_str,
+            title="signals_" + seed_str,
             legend="upper right",
             show=args.figure_show,
         )
 
-        """
-            Degradation correction
-        """
-        pprint_block("Degradation Correction", level=2)
+        pprint_block("Degradation Correction", level=2, color="yellow")
         degradation_model = tsipy.correction.load_model(args.degradation_model)
         degradation_model.initial_fit(a_m, b_m, e_a_m)
 
@@ -120,10 +116,7 @@ if __name__ == "__main__":
         a_c_nn = np.divide(a_nn, d_a_c)
         b_c_nn = np.divide(b_nn, d_b_c)
 
-        """
-            Results
-        """
-        pprint_block("Results", level=2)
+        pprint_block("Results", level=2, color="yellow")
 
         plot_signals(
             [
@@ -132,7 +125,7 @@ if __name__ == "__main__":
                 (signal_generator.t, signal_generator.s, r"$s$", False),
             ],
             results_dir=results_dir,
-            title="signals_corrected" + seed_str,
+            title="signals_corrected_" + seed_str,
             legend="upper right",
             show=args.figure_show,
         )
@@ -151,7 +144,7 @@ if __name__ == "__main__":
                 ),
             ],
             results_dir=results_dir,
-            title="degradation" + seed_str,
+            title="degradation_" + seed_str,
             legend="lower left",
             show=args.figure_show,
         )
@@ -175,7 +168,7 @@ if __name__ == "__main__":
                 for i, signals in enumerate(history[:4])
             ],
             results_dir,
-            title="correction-history" + seed_str,
+            title="correction_history_" + seed_str,
             n_rows=2,
             n_cols=2,
             show=args.figure_show,

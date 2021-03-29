@@ -49,7 +49,10 @@ class SVGPModel(NormalizationClippingMixin, FusionModel):
         return y_mean.ravel(), y_std.ravel()
 
     def build_model(
-        self, x: np.ndarray, x_inducing: Optional[np.ndarray] = None, random_seed : Optional[int] = None
+        self,
+        x: np.ndarray,
+        x_inducing: Optional[np.ndarray] = None,
+        random_seed: Optional[int] = None,
     ) -> NoReturn:
         self.set_random_seed(random_seed)
 

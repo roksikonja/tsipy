@@ -69,7 +69,7 @@ class LocalGPModel(NormalizationClippingMixin):
 
         return y_window_mean, y_window_std
 
-    def build_models(self, random_seed : Optional[int] = None) -> NoReturn:
+    def build_models(self, random_seed: Optional[int] = None) -> NoReturn:
         x, y = self.windows.gather_data()
         self._compute_normalization_values(x[:, 0], y)
 
@@ -78,7 +78,9 @@ class LocalGPModel(NormalizationClippingMixin):
 
         for window in self.windows:
             window.model = copy.deepcopy(self._model)
-            window.model.build_model(window.x, window.x_inducing, random_seed=random_seed)
+            window.model.build_model(
+                window.x, window.x_inducing, random_seed=random_seed
+            )
 
             # Update normalize values of the model
             window.model.x_mean = self.x_mean

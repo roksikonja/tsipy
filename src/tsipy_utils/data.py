@@ -1,14 +1,12 @@
 import datetime
 import os
-from typing import Any, Optional, Union
+from typing import Any, List, Union
 
 import numpy as np
-import pandas as pd
 
 __all__ = [
     "make_dir",
     "create_results_dir",
-    "load_data",
     "is_integer",
     "downsample_signal",
     "downsampling_indices_by_max_points",
@@ -33,14 +31,6 @@ def create_results_dir(results_dir_path: str, dir_name: str = "results") -> str:
         )
     )
     return results_dir
-
-
-def load_data(data_dir: str, data_file: str) -> Optional[Any]:
-    if data_file in os.listdir(data_dir):
-        data = pd.read_hdf(os.path.join(data_dir, data_file), "table")
-        return data
-
-    return None
 
 
 def is_integer(num: Any) -> bool:
@@ -87,7 +77,7 @@ def transform_time_to_unit(
 
 
 def get_time_output(
-    t_nns: np.ndarray,
+    t_nns: List[np.ndarray],
     n_out_per_unit: int = 24,
     min_time: Union[np.ndarray, float] = None,
     max_time: Union[np.ndarray, float] = None,

@@ -81,7 +81,7 @@ def correct_one(
         i += 1
 
     if verbose:
-        pprint(f"- Corrected in {i} iterations", level=1)
+        pprint(f"- Corrected in {i} iterations.", level=1)
 
     return a_m_c, b_m_c, model, history
 
@@ -134,7 +134,7 @@ def correct_both(
         i += 1
 
     if verbose:
-        pprint(f"- Corrected in {i} iterations", level=1)
+        pprint(f"- Corrected in {i} iterations.", level=1)
 
     # Re-fit
     ratio_m = np.divide(a_m, b_m_c + 1e-9)

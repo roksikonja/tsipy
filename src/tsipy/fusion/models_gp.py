@@ -91,7 +91,6 @@ class SVGPModel(NormalizationClippingMixin, FusionModel):
         random_seed: Optional[int] = None,
         verbose: bool = False,
     ) -> NoReturn:
-
         x, y = self.normalize_and_clip(x, y)
 
         x = np.atleast_2d(x)

@@ -18,15 +18,13 @@ def test_equivalence_localgp_and_svgp(show=False, verbose=False):
         length=10_000, add_degradation=False, random_seed=1
     )
 
-    x_a = signal_generator.t[signal_generator.t_a_indices]
-    x_b = signal_generator.t[signal_generator.t_b_indices]
-    y_a = signal_generator.a[signal_generator.t_a_indices]
-    y_b = signal_generator.b[signal_generator.t_b_indices]
+    x_a, y_a = signal_generator["a"]
+    x_b, y_b = signal_generator["b"]
 
     plot_signals(
         [
-            (x_a, y_a, r"$a$", False),
-            (x_b, y_b, r"$b$", False),
+            (x_a, y_a, "$a$", False),
+            (x_b, y_b, "$b$", False),
         ],
         show=show,
     )
@@ -37,7 +35,7 @@ def test_equivalence_localgp_and_svgp(show=False, verbose=False):
     x = concatenate_labels(x, x_labels)
     x, y = sort_inputs(x, y, sort_axis=0)
 
-    x_out = signal_generator.t
+    x_out = signal_generator.x
     x_out_labels = build_output_labels(x_out)
     x_out = concatenate_labels(x_out, x_out_labels)
 
@@ -84,7 +82,7 @@ def test_equivalence_localgp_and_svgp(show=False, verbose=False):
         [
             (x_out[:, 0], y_out_mean_local + 1, "LocalGP +1", False),
             (x_out[:, 0], y_out_mean_svgp - 1, "SVGP -1", False),
-            (signal_generator.t, signal_generator.s, "GT", False),
+            (signal_generator.x, signal_generator.y, "GT", False),
         ],
         legend="upper left",
         show=show,
@@ -102,10 +100,8 @@ def test_visualize_localgp(show=False, verbose=False):
         length=10_000, add_degradation=False, random_seed=1
     )
 
-    x_a = signal_generator.t[signal_generator.t_a_indices]
-    x_b = signal_generator.t[signal_generator.t_b_indices]
-    y_a = signal_generator.a[signal_generator.t_a_indices]
-    y_b = signal_generator.b[signal_generator.t_b_indices]
+    x_a, y_a = signal_generator["a"]
+    x_b, y_b = signal_generator["b"]
 
     labels, x_labels = build_labels([x_a, x_b])
     y = np.reshape(np.hstack((y_a, y_b)), newshape=(-1, 1))
@@ -121,7 +117,7 @@ def test_visualize_localgp(show=False, verbose=False):
         show=show,
     )
 
-    x_out = signal_generator.t
+    x_out = signal_generator.x
     x_out_labels = build_output_labels(x_out)
     x_out = concatenate_labels(x_out, x_out_labels)
 
@@ -164,7 +160,7 @@ def test_visualize_localgp(show=False, verbose=False):
         fig, ax = plot_signals_and_confidence(
             [(x_out[:, 0], y_out_mean_local, y_out_std_local, "LocalGP")],
         )
-        ax.plot(signal_generator.t, signal_generator.s, label="$s$")
+        ax.plot(signal_generator.x, signal_generator.y, label="$s$")
         ax.plot(
             x_inducing,
             y_inducing,

@@ -256,7 +256,7 @@ class SmoothMRModel(DegradationModel):
 def load_model(degradation_model: str) -> DegradationModel:
     if degradation_model == "exp":
         model = ExpModel()
-    elif degradation_model == "exp_lin":
+    elif degradation_model == "explin":
         model = ExpLinModel()
     elif degradation_model == "mr":
         model = MRModel()

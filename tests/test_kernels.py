@@ -1,7 +1,6 @@
 import numpy as np
 import tensorflow as tf
 from gpflow.kernels import Linear
-from gpflow.utilities import print_summary
 
 from tsipy.fusion.kernels import MultiWhiteKernel
 from tsipy.fusion.utils import build_labels
@@ -39,10 +38,6 @@ def test_kernel():
         mask = tf.cast(tf.equal(x[:, -1], i + 1), dtype=tf.float64)
         mask_variances = mask * noise_variances[i]
         variances = variances + mask_variances
-
-    # Test
-    print_summary(linear_kernel)
-    print_summary(multi_kernel)
 
     # Test dimensions
     assert np.array_equal(linear_kernel(x).numpy().shape, multi_kernel(x).numpy().shape)

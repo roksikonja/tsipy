@@ -9,31 +9,35 @@ import scipy.signal
 import tensorflow as tf
 
 import tsipy.fusion
+import tsipy.fusion
 from tsipy.fusion.utils import (
     build_labels,
     build_output_labels,
     concatenate_labels,
 )
-from tsipy.utils import pprint, pprint_block
-from utils import Constants as Const
-from utils.data import transform_time_to_unit, create_results_dir
-from utils.visualizer import plot_signals, plot_signals_and_confidence
+from tsipy.utils import pprint, pprint_block, sort_inputs
+from tsipy_utils.data import transform_time_to_unit, make_dir
+from tsipy_utils.visualizer import plot_signals_and_confidence, plot_signals
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--experiment_name", default="exp_acrim", type=str)
+    parser.add_argument("--experiment_name", "-e", default="demo_fusion", type=str)
 
     # Fusion Model
-    parser.add_argument("--fusion_model", default="svgp", type=str)
+    parser.add_argument("--fusion_model", "-m", default="svgp", type=str)
+
+    # Preprocess
+    parser.add_argument("--normalization", "-n", action="store_false")
+    parser.add_argument("--clipping", "-c", action="store_false")
 
     # SVGP
-    parser.add_argument("--num_inducing_pts", default=1000, type=int)
+    parser.add_argument("--num_inducing_pts", "-n_ind_pts", default=1000, type=int)
     parser.add_argument("--max_iter", default=8000, type=int)
 
     # Local GP
-    parser.add_argument("--pred_window", default=2.0, type=float)
-    parser.add_argument("--fit_window", default=6.0, type=float)
+    parser.add_argument("--pred_window", "-p_w", default=0.2, type=float)
+    parser.add_argument("--fit_window", "-f_w", default=0.6, type=float)
 
     # Visualize
     parser.add_argument("-figure_show", action="store_true")
@@ -43,17 +47,10 @@ def parse_arguments():
 if __name__ == "__main__":
     args = parse_arguments()
 
-    results_dir = create_results_dir(
-        "../results", f"{args.experiment_name}_{args.fusion_model}"
-    )
+    pprint_block("Experiment", args.experiment_name)
+    results_dir = make_dir(os.path.join("../results", args.experiment_name))
 
-    """
-        Dataset
-    """
     pprint_block("Dataset")
-    t_field = "t"
-    a_field, b_field, c_field = "a", "b", "c"
-
     # Load data
     data = pd.read_csv(
         os.path.join("../data", "ACRIM1_SATIRE_HF.txt"),
@@ -62,31 +59,35 @@ if __name__ == "__main__":
     )
     data = data.rename(
         columns={
-            0: t_field,
-            1: a_field,
-            2: b_field,
-            3: c_field,
+            0: "t",
+            1: "a",
+            2: "b",
+            3: "c",
         }
     )
-    t_org = data[t_field].values.copy()
-    data[t_field] = transform_time_to_unit(
-        data[t_field] - data[t_field][0],
-        x_label=Const.YEAR_UNIT,
+    t_org = data["t"].values.copy()
+    data["t"] = transform_time_to_unit(
+        data["t"] - data["t"][0],
+        x_label="year",
         start=datetime.datetime(1980, 1, 1),
     )
 
-    t = data[t_field].values
-    t_a = t_b = t_c = t
-    a = data[a_field].values
-    b = data[b_field].values
-    c = data[c_field].values
+    t_a = t_b = t_c = data["t"].values
+    a = data["a"].values
+    b = data["b"].values
+    c = data["c"].values
 
-    print(data, "\n")
-    pprint("- data", data.shape)
-    pprint("- " + t_field, t.shape)
-    pprint("- " + a_field, a.shape, np.sum(~np.isnan(a)))
-    pprint("- " + b_field, b.shape, np.sum(~np.isnan(b)))
-    pprint("- " + c_field, c.shape, np.sum(~np.isnan(c)))
+    pprint("Signal", level=0)
+    pprint("- t_a", t_a.shape, level=1)
+    pprint("- a", a.shape, level=1)
+
+    pprint("Signal", level=0)
+    pprint("- t_b", t_b.shape, level=1)
+    pprint("- b", b.shape, level=1)
+
+    pprint("Signal", level=0)
+    pprint("- t_c", t_c.shape, level=1)
+    pprint("- c", c.shape, level=1)
 
     plot_signals(
         [
@@ -117,34 +118,31 @@ if __name__ == "__main__":
         show=args.figure_show,
     )
 
-    """
-        Data-fusion
-    """
     pprint_block("Data Fusion")
     gpf.config.set_default_float(np.float64)
     np.random.seed(0)
     tf.random.set_seed(0)
 
-    labels, t_labels = build_labels((t_a, t_b, t_c))
-    s = np.hstack((a, b, c))
+    labels, t_labels = build_labels([t_a, t_b, t_c])
+    s = np.reshape(np.hstack((a, b, c)), newshape=(-1, 1))
     t = np.hstack((t_a, t_b, t_c))
     t = concatenate_labels(t, t_labels)
+    t, s = sort_inputs(t, s, sort_axis=0)
 
-    t_out = t_a
+    t_out = t
     t_out_labels = build_output_labels(t_out)
-    # t has to be sorted!, sort_axis=0
-    t_out = concatenate_labels(t_out, t_out_labels, sort_axis=0)
+    t_out = concatenate_labels(t_out, t_out_labels)
 
-    pprint("labels", labels)
-    pprint("t_labels", t_labels.shape)
-    pprint("t", t.shape)
-    pprint("s", s.shape)
-    pprint("t_out_labels", t_out_labels.shape)
-    pprint("t_out", t_out.shape)
+    pprint("Signals", level=0)
+    pprint("- t", t.shape, level=1)
+    pprint("- s", s.shape, level=1)
 
-    """
-        Kernel
-    """
+    pprint("Signal", level=0)
+    pprint("- labels", labels, level=1)
+    pprint("- t_labels", t_labels.shape, level=1)
+    pprint("- t_out_labels", t_out_labels.shape, level=1)
+    pprint("- t_out", t_out.shape, level=1)
+
     # Signal kernel
     matern_kernel = gpf.kernels.Matern12(active_dims=[0])  # Kernel for time dimension
 
@@ -156,15 +154,10 @@ if __name__ == "__main__":
     # Kernel composite
     kernel = matern_kernel + white_kernel
 
-    """
-        Gaussian Process Model
-    """
     if args.fusion_model == "localgp":
         local_model = tsipy.fusion.SVGPModel(
             kernel=kernel,
             num_inducing_pts=args.num_inducing_pts,
-            normalization=False,
-            clipping=False,
         )
 
         local_windows = tsipy.fusion.local_gp.create_windows(
@@ -172,17 +165,17 @@ if __name__ == "__main__":
             s,
             pred_window=args.pred_window,
             fit_window=args.fit_window,
-            normalization=False,
-            clipping=False,
             verbose=True,
         )
 
         fusion_model = tsipy.fusion.LocalGPModel(
-            model=local_model, windows=local_windows
+            model=local_model,
+            normalization=args.normalization,
+            clipping=args.clipping,
         )
 
         # Train
-        fusion_model.fit(max_iter=args.max_iter, verbose=True)
+        fusion_model.fit(windows=local_windows, max_iter=args.max_iter, verbose=True)
 
         # Predict
         pprint_block("Inference", level=2)
@@ -199,9 +192,6 @@ if __name__ == "__main__":
         pprint_block("Inference", level=2)
         s_out_mean, s_out_std = fusion_model(t_out)
 
-    """
-        Composite
-    """
     t_out = t_out[:, 0]
 
     pprint("t_out", t_out.shape)
@@ -254,11 +244,8 @@ if __name__ == "__main__":
     if args.figure_show:
         fig.show()
 
-    """
-        Training
-    """
     if args.fusion_model == "localgp":
-        for i, window in enumerate(fusion_model.windows.list):
+        for i, window in enumerate(fusion_model.windows):
             elbo = window.model.iter_elbo
             plot_signals(
                 [(np.arange(elbo.size), elbo, r"ELBO", False)],
@@ -277,13 +264,10 @@ if __name__ == "__main__":
             show=args.figure_show,
         )
 
-    """
-        Save
-    """
     data_results = pd.DataFrame(
         {
-            t_field + "_org": t_org,
-            t_field: t_out,
+            "t" + "_org": t_org,
+            "t": t_out,
             "s_out_mean": s_out_mean,
             "s_out_std": s_out_std,
         }

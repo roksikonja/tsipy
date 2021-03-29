@@ -92,10 +92,8 @@ def test_visualize_windows_one(show=False, verbose=False):
         length=10_000, add_degradation=False, random_seed=1
     )
 
-    x_a = signal_generator.t[signal_generator.t_a_indices]
-    x_b = signal_generator.t[signal_generator.t_b_indices]
-    y_a = signal_generator.a[signal_generator.t_a_indices]
-    y_b = signal_generator.b[signal_generator.t_b_indices]
+    x_a, y_a = signal_generator["a"]
+    x_b, y_b = signal_generator["b"]
 
     _, ax_ful = plot_signals(
         [
@@ -135,7 +133,7 @@ def test_visualize_windows_one(show=False, verbose=False):
             )
 
         fig, ax = plot_signals(
-            [*signal_fiveplets, (signal_generator.t, signal_generator.s, "GT", False)],
+            [*signal_fiveplets, (signal_generator.x, signal_generator.y, "GT", False)],
             legend="upper left",
         )
         ax.axvline(x=window.x_pred_start, color="k")
@@ -155,10 +153,8 @@ def test_visualize_windows_two(show=False, verbose=False):
         length=10_000, add_degradation=False, random_seed=1
     )
 
-    x_a = signal_generator.t[signal_generator.t_a_indices]
-    x_b = signal_generator.t[signal_generator.t_b_indices]
-    y_a = signal_generator.a[signal_generator.t_a_indices]
-    y_b = signal_generator.b[signal_generator.t_b_indices]
+    x_a, y_a = signal_generator["a"]
+    x_b, y_b = signal_generator["b"]
 
     _, ax_ful = plot_signals(
         [
@@ -198,7 +194,7 @@ def test_visualize_windows_two(show=False, verbose=False):
             )
 
         fig, ax = plot_signals(
-            [*signal_fiveplets, (signal_generator.t, signal_generator.s, "GT", False)],
+            [*signal_fiveplets, (signal_generator.x, signal_generator.y, "GT", False)],
             legend="upper left",
         )
         ax.axvline(x=window.x_pred_start, color="k")

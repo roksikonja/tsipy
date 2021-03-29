@@ -1,4 +1,5 @@
-from typing import Optional, Tuple
+import string
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -14,116 +15,139 @@ class SignalGenerator(object):
         length: int = 100000,
         add_degradation: bool = True,
         add_noise: bool = True,
-        downsampling_a: float = 0.9,
-        downsampling_b: float = 0.2,
-        std_noise_a: float = 0.025,
-        std_noise_b: float = 0.015,
+        downsampling_rates: Tuple = (0.9, 0.2),
+        noise_stds: Tuple = (0.025, 0.015),
         exposure_method: str = "num_measurements",
         random_seed: int = 0,
     ):
         np.random.seed(random_seed)
+        self.length = length
 
         self.add_degradation = add_degradation
         self.add_noise = add_noise
 
-        self.downsampling_a = downsampling_a
-        self.downsampling_b = downsampling_b
-        self.std_noise_a = std_noise_a
-        self.std_noise_b = std_noise_b
+        self.downsampling_rates = downsampling_rates
+        self.noise_stds = noise_stds
 
-        self.t: np.ndarray = np.linspace(0, 1, length)
-        self.s: np.ndarray = self.generate_signal()
+        self.x: np.ndarray = np.linspace(0.0, 1.0, self.length)
+        self.y: np.ndarray = self.generate_signal()
 
-        self.a: Optional[np.ndarray] = None
-        self.b: Optional[np.ndarray] = None
-        self.t_a_indices: Optional[
-            np.ndarray
-        ] = None  # Measurement time indices of each sensor
-        self.t_b_indices: Optional[
-            np.ndarray
-        ] = None  # Measurement time indices of each sensor
-
-        self.e_a: Optional[np.ndarray] = None
-        self.e_b: Optional[np.ndarray] = None
+        self.signal_names: List[str] = list(string.ascii_lowercase[:26])
+        self.signals: Dict[str, Tuple] = dict()
 
         self.exposure_method = exposure_method
         self.degradation_model = ExpModel()
-        self.degradation_model.params = self.compute_degradation_params()
-
-        self.generate_measurements()
+        self.degradation_model.params = self.generate_degradation_parameters()
 
     @property
     def data(self) -> pd.DataFrame:
+        a = self._get_signal("a")
+        b = self._get_signal("b")
         data = pd.DataFrame(
             {
-                "t": self.t,
-                "a": self.a,
-                "b": self.b,
+                "t": self.x,
+                "a": a[0],
+                "b": b[0],
             }
         )
         return data
 
-    def generate_signal(self) -> np.ndarray:
-        x = 10 + self._brownian(self.t.shape[0], dt=self.t[1] - self.t[0], std_scale=5)
-        return x
+    def __getitem__(self, signal_name: str) -> Tuple[np.ndarray, np.ndarray]:
+        """Gets non-nan x and y of `key` signal."""
+        y, x_indices, _ = self._get_signal(signal_name)
+        return self.x[x_indices], y[x_indices]
 
-    def generate_measurements(self):
-        s_range = np.max(self.s) - np.min(self.s)
-        s_mean = float(np.mean(self.s))
+    def get_exposure_nn(self, signal_name: str) -> np.ndarray:
+        _, x_indices, e = self._get_signal(signal_name)
+        return e[x_indices]
+
+    def get_indices_nn(self, signal_name: str) -> np.ndarray:
+        return self._get_signal(signal_name)[1]
+
+    def get_signal_nn(
+        self, signal_name: str
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        y, x_indices, e = self._get_signal(signal_name)
+
+        x_nn = self.x[x_indices]
+        y_nn = y[x_indices]
+        e_nn = e[x_indices]
+        return x_nn, y_nn, e_nn
+
+    def _get_signal(self, signal_name: str):
+        if signal_name not in self.signals:
+            self.generate_measurement(signal_name)
+
+        return self.signals[signal_name]
+
+    def _get_signal_parameters(self, signal_name: str) -> Tuple[float, float]:
+        signal_id = self.signal_names.index(signal_name)
+
+        if signal_id < len(self.downsampling_rates):
+            downsampling_rate = self.downsampling_rates[signal_id]
+        else:
+            downsampling_rate = 0.5
+
+        if signal_id < len(self.noise_stds):
+            noise_std = self.noise_stds[signal_id]
+        else:
+            noise_std = 0.02
+
+        return downsampling_rate, noise_std
+
+    def generate_measurement(
+        self, signal_name: str
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        downsampling_rate, noise_std = self._get_signal_parameters(signal_name)
+
+        y_range = np.max(self.y) - np.min(self.y)
+        y_mean = float(np.mean(self.y))
+
+        # Copy ground truth signal
+        y = self.y.copy()
 
         # Get measurement time indices
-        self.t_a_indices = self.measurement_indices(self.t, self.downsampling_a)
-        self.t_b_indices = self.measurement_indices(self.t, self.downsampling_b)
-
-        self.a = self.s.copy()
-        self.a[~self.t_a_indices] = np.nan
-        self.b = self.s.copy()
-        self.b[~self.t_b_indices] = np.nan
-
-        self.e_a = compute_exposure(self.a, method=self.exposure_method, x_mean=s_mean)
-        self.e_b = compute_exposure(self.b, method=self.exposure_method, x_mean=s_mean)
-
-        max_e = max(np.max(self.e_a), np.max(self.e_b))
-        self.e_a /= max_e
-        self.e_b /= max_e
-
-        d_a_nn = self.degradation_model(self.e_a[self.t_a_indices])
-        d_b_nn = self.degradation_model(self.e_b[self.t_b_indices])
-
-        noise_a_nn = self.generate_noise(
-            self.a[self.t_a_indices].shape, std=s_range * self.std_noise_a
-        )
-        noise_b_nn = self.generate_noise(
-            self.b[self.t_b_indices].shape, std=s_range * self.std_noise_b
-        )
+        x_indices = self.generate_measurement_indices(self.x, downsampling_rate)
+        y[~x_indices] = np.nan
 
         # Degrade signals
+        e = np.zeros_like(y)
         if self.add_degradation:
-            self.a[self.t_a_indices] *= d_a_nn
-            self.b[self.t_b_indices] *= d_b_nn
+            e = compute_exposure(y, method=self.exposure_method, x_mean=y_mean)
+            e /= self.length  # Normalize exposure to [0, 1]
+            y[x_indices] *= self.degradation_model(e[x_indices])
 
         # Add noise
         if self.add_noise:
-            self.a[self.t_a_indices] += noise_a_nn
-            self.b[self.t_b_indices] += noise_b_nn
+            y[x_indices] += self.generate_noise(y[x_indices], std=y_range * noise_std)
+
+        self.signals[signal_name] = (y, x_indices, e)
+        return self.signals[signal_name]
+
+    def generate_signal(self) -> np.ndarray:
+        x = 10 + self.generate_brownian(
+            self.x.shape[0], dt=self.x[1] - self.x[0], std_scale=5
+        )
+        return x
 
     @staticmethod
-    def _brownian(n: int, dt: float, std_scale: float) -> np.ndarray:
+    def generate_brownian(n: int, dt: float, std_scale: float) -> np.ndarray:
         x = scipy.stats.norm.rvs(size=(n,), scale=std_scale * np.sqrt(dt), loc=0.0)
-        return np.cumsum(x, axis=-1)
+        return np.cumsum(x)
 
     @staticmethod
-    def measurement_indices(t: np.ndarray, rate: float) -> np.ndarray:
-        nn_indices = np.random.rand(t.shape[0]) <= rate
-        return nn_indices
-
-    @staticmethod
-    def compute_degradation_params() -> np.ndarray:
+    def generate_degradation_parameters() -> np.ndarray:
         params = np.random.rand(2)
         params[1] = -np.abs(params[1])
         return params
 
     @staticmethod
-    def generate_noise(shape: Tuple[int, ...], std: float = 1.0) -> np.ndarray:
+    def generate_measurement_indices(t: np.ndarray, rate: float) -> np.ndarray:
+        nn_indices = np.random.rand(t.shape[0]) <= rate
+        return nn_indices
+
+    @staticmethod
+    def generate_noise(x: np.ndarray, std: float = 1.0) -> np.ndarray:
+        shape = x.shape
         noise = np.random.normal(0, std, shape)
         return noise

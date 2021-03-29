@@ -56,7 +56,7 @@ class NormalizationClippingMixin:
         self, x: np.ndarray, y: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
         if self.clipping:
-            clip_indices = clipping_indices(y)
-            x, y = x[clip_indices, :], y[clip_indices]
+            clip_indices = clipping_indices(y[:, 0])
+            x, y = x[clip_indices, :], y[clip_indices, :]
 
         return x, y

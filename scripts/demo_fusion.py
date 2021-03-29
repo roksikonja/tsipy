@@ -4,6 +4,7 @@ import os
 import gpflow as gpf
 import numpy as np
 import tensorflow as tf
+
 import tsipy.fusion
 from tsipy.correction.generator import SignalGenerator
 from tsipy.fusion.utils import (
@@ -12,78 +13,63 @@ from tsipy.fusion.utils import (
     concatenate_labels,
 )
 from tsipy.utils import pprint, pprint_block, sort_inputs
-from tsipy_utils.data import create_results_dir
+from tsipy_utils.data import make_dir
 from tsipy_utils.visualizer import plot_signals_and_confidence, plot_signals
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--experiment_name", default="demo_fusion", type=str)
+    parser.add_argument("--experiment_name", "-e", default="demo_fusion", type=str)
 
     # Fusion Model
-    # parser.add_argument("--fusion_model", default="svgp", type=str)
-    parser.add_argument("--fusion_model", default="localgp", type=str)
+    parser.add_argument("--fusion_model", "-m", default="svgp", type=str)
 
     # Preprocess
-    # parser.add_argument("--normalization", action="store_false")
-    # parser.add_argument("--clipping", action="store_false")
-    parser.add_argument("--normalization", action="store_true")
-    parser.add_argument("--clipping", action="store_true")
+    parser.add_argument("--normalization", "-n", action="store_false")
+    parser.add_argument("--clipping", "-c", action="store_false")
 
     # SVGP
-    # parser.add_argument("--num_inducing_pts", default=1000, type=int)
-    # parser.add_argument("--max_iter", default=8000, type=int)
-    parser.add_argument("--num_inducing_pts", default=100, type=int)
-    parser.add_argument("--max_iter", default=200, type=int)
+    parser.add_argument("--num_inducing_pts", "-n_ind_pts", default=1000, type=int)
+    parser.add_argument("--max_iter", default=8000, type=int)
 
     # Local GP
-    parser.add_argument("--pred_window", default=1.0, type=float)
-    parser.add_argument("--fit_window", default=1.0, type=float)
+    parser.add_argument("--pred_window", "-p_w", default=0.2, type=float)
+    parser.add_argument("--fit_window", "-f_w", default=0.6, type=float)
 
     # Visualize
-    # parser.add_argument("-figure_show", action="store_true")
-    parser.add_argument("-figure_show", action="store_false")
+    parser.add_argument("-figure_show", action="store_true")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_arguments()
 
-    results_dir = create_results_dir(
-        "../results", f"{args.experiment_name}_{args.fusion_model}"
-    )
+    pprint_block("Experiment", args.experiment_name)
+    results_dir = make_dir(os.path.join("../results", args.experiment_name))
 
-    pprint_block("Dataset", color="green")
+    pprint_block("Dataset")
     np.random.seed(0)
     tf.random.set_seed(0)
-
-    t_field = "t"
-    a_field = "a"
-    b_field = "b"
-
-    t_a_field, t_b_field = t_field + "_a", t_field + "_b"
 
     # Generate Brownian motion signal
     signal_generator = SignalGenerator(add_degradation=False)
 
-    t_a = signal_generator.t[signal_generator.t_a_indices]
-    t_b = signal_generator.t[signal_generator.t_b_indices]
-    a = signal_generator.a[signal_generator.t_a_indices]
-    b = signal_generator.b[signal_generator.t_b_indices]
+    t_a, a = signal_generator["a"]
+    t_b, b = signal_generator["b"]
 
     pprint("Signal", level=0)
-    pprint("- " + t_a_field, t_a.shape, level=1)
-    pprint("- " + a_field, a.shape, level=1)
+    pprint("- t_a", t_a.shape, level=1)
+    pprint("- a", a.shape, level=1)
 
     pprint("Signal", level=0)
-    pprint("- " + t_b_field, t_b.shape, level=1)
-    pprint("- " + b_field, b.shape, level=1)
+    pprint("- t_b", t_b.shape, level=1)
+    pprint("- b", b.shape, level=1)
 
     plot_signals(
         [
-            (t_a, a, r"$a$", False),
-            (t_b, b, r"$b$", False),
-            (signal_generator.t, signal_generator.s, r"$s$", False),
+            (t_a, a, "$a$", False),
+            (t_b, b, "$b$", False),
+            (signal_generator.x, signal_generator.y, "$s$", False),
         ],
         results_dir=results_dir,
         title="signals",
@@ -91,7 +77,7 @@ if __name__ == "__main__":
         show=args.figure_show,
     )
 
-    pprint_block("Data Fusion", color="green")
+    pprint_block("Data Fusion")
     gpf.config.set_default_float(np.float64)
     np.random.seed(0)
     tf.random.set_seed(0)
@@ -102,7 +88,7 @@ if __name__ == "__main__":
     t = concatenate_labels(t, t_labels)
     t, s = sort_inputs(t, s, sort_axis=0)
 
-    t_out = signal_generator.t
+    t_out = signal_generator.x
     t_out_labels = build_output_labels(t_out)
     t_out = concatenate_labels(t_out, t_out_labels)
 
@@ -146,11 +132,11 @@ if __name__ == "__main__":
         )
 
         # Train
-        pprint_block("Training", level=2, color="yellow")
+        pprint_block("Training", level=2)
         fusion_model.fit(windows=local_windows, max_iter=args.max_iter)
 
         # Predict
-        pprint_block("Inference", level=2, color="yellow")
+        pprint_block("Inference", level=2)
         s_out_mean, s_out_std = fusion_model(t_out, verbose=True)
     else:
         fusion_model = tsipy.fusion.SVGPModel(
@@ -161,14 +147,14 @@ if __name__ == "__main__":
         )
 
         # Train
-        pprint_block("Training", level=2, color="yellow")
+        pprint_block("Training", level=2)
         fusion_model.fit(t, s, max_iter=args.max_iter, x_val=t_out, n_evals=5)
 
         # Predict
-        pprint_block("Inference", level=2, color="yellow")
+        pprint_block("Inference", level=2)
         s_out_mean, s_out_std = fusion_model(t_out)
 
-    pprint_block("Results", color="green")
+    pprint_block("Results")
     t_out = t_out[:, 0]
 
     pprint("- t_out", t_out.shape, level=1)
@@ -201,7 +187,7 @@ if __name__ == "__main__":
         results_dir=results_dir,
         title="signals_fused_s",
     )
-    ax.plot(signal_generator.t, signal_generator.s, label=r"$s$")
+    ax.plot(signal_generator.x, signal_generator.y, label="$s$")
     fig.savefig(os.path.join(results_dir, "signals_fused_s"))
     if args.figure_show:
         fig.show()

@@ -168,7 +168,7 @@ def create_prediction_windows(
 
     # If statement is necessary when there is only one window
     x_pred_mid = x_pred_start if x_pred_start > -np.infty else x_min
-    x_pred_mid = x_pred_mid + pred_window / 2.0
+    x_pred_mid += pred_window / 2.0
 
     pred_windows.append((x_pred_start, np.infty, x_pred_mid))
 

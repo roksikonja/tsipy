@@ -1,3 +1,7 @@
+"""
+This module implements algorithms that perform degradation correction.
+"""
+
 from typing import List, Tuple
 
 import numpy as np
@@ -84,18 +88,13 @@ def correct_one(
         correction_triplet = (a_m_c, b_m_c, ratio_m)
         history.append(correction_triplet)
 
-        # Check convergence
-        previous_a_m_c = previous_correction_triplet[0]
-        previous_b_m_c = previous_correction_triplet[1]
-
-        delta_norm_a = np.linalg.norm(a_m_c - previous_a_m_c) / np.linalg.norm(
-            previous_a_m_c
+        converged = check_convergence(
+            a_m_c,
+            b_m_c,
+            previous_correction_triplet[0],
+            previous_correction_triplet[1],
+            eps=eps,
         )
-        delta_norm_b = np.linalg.norm(b_m_c - previous_b_m_c) / np.linalg.norm(
-            previous_b_m_c
-        )
-
-        converged = delta_norm_a + delta_norm_b < eps
         if converged:
             break
 
@@ -150,18 +149,13 @@ def correct_both(
         correction_triplet = (a_m_c, b_m_c, ratio_m)
         history.append(correction_triplet)
 
-        # Check convergence
-        previous_a_m_c = previous_correction_triplet[0]
-        previous_b_m_c = previous_correction_triplet[1]
-
-        delta_norm_a = np.linalg.norm(a_m_c - previous_a_m_c) / np.linalg.norm(
-            previous_a_m_c
+        converged = check_convergence(
+            a_m_c,
+            b_m_c,
+            previous_correction_triplet[0],
+            previous_correction_triplet[1],
+            eps=eps,
         )
-        delta_norm_b = np.linalg.norm(b_m_c - previous_b_m_c) / np.linalg.norm(
-            previous_b_m_c
-        )
-
-        converged = delta_norm_a + delta_norm_b < eps
         if converged:
             break
 
@@ -177,3 +171,13 @@ def correct_both(
     b_m_c = np.divide(b_m, d_b_c + 1e-9)
 
     return a_m_c, b_m_c, model, history
+
+
+def check_convergence(
+    a: np.ndarray, b: np.ndarray, ref_a: np.ndarray, ref_b: np.ndarray, eps=1e-6
+) -> bool:
+    """Computes relative difference between iterations ``i`` and ``i + 1`` and checks convergence."""
+    delta_norm_a = np.linalg.norm(a - ref_a) / np.linalg.norm(ref_a)
+    delta_norm_b = np.linalg.norm(b - ref_b) / np.linalg.norm(ref_b)
+
+    return delta_norm_a + delta_norm_b < eps

@@ -10,7 +10,7 @@ from tsipy.utils import pprint_block, sort_inputs
 from tsipy_utils.visualizer import plot_signals, plot_signals_and_confidence
 
 
-def test_equivalence_localgp_and_svgp(show=False, verbose=False):
+def test_equivalence_localgp_and_svgp(show=True, verbose=False):
     if verbose:
         pprint_block("Equivalence between SVGP and LocalGP", color="green")
 
@@ -92,7 +92,7 @@ def test_equivalence_localgp_and_svgp(show=False, verbose=False):
     check_array_approximate(y_out_std_local, y_out_std_svgp, tolerance=0.2)
 
 
-def test_visualize_localgp(show=False, verbose=False):
+def test_visualize_localgp(show=True, verbose=False):
     if verbose:
         pprint_block("V", color="green")
 

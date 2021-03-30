@@ -1,14 +1,15 @@
 # TSIPY
 
 Python package for processing TSI signals.
- 
-Follows algorithms as described in 
-[Iterative Correction of Sensor Degradation and a Bayesian Multi-Sensor Data Fusion Method](https://arxiv.org/abs/2009.03091).
 
+Follows algorithms as described in
+[Iterative Correction of Sensor Degradation and a Bayesian Multi-Sensor Data Fusion Method](https://arxiv.org/abs/2009.03091)
+.
 
 ## Installation
 
-Tested with ```3.7.x```. In Python ```3.8.x``` there is a conflict between dependencies ```cvxpy``` and ```tensorflow```.  
+Tested with ```3.7.x```. In Python ```3.8.x``` there is a conflict between dependencies ```cvxpy``` and ```tensorflow```
+.
 
     # install from source
     git clone https://github.com/roksikonja/tsipy.git
@@ -23,7 +24,6 @@ Tested with ```3.7.x```. In Python ```3.8.x``` there is a conflict between depen
     conda activate tsipy
     pip install -e .
 
-
 ## Usage
 
 Demos can be found in ```./scripts```.
@@ -32,7 +32,6 @@ Demos can be found in ```./scripts```.
 
     # or run batch file
     ./scripts/run.bat
-
 
 ## Cite
 
@@ -49,3 +48,7 @@ Demos can be found in ```./scripts```.
 
     pytest tests
     mypy .\src
+    
+    # docs
+    cd docs
+    .\make.bat html -b spelling

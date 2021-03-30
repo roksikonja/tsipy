@@ -1,3 +1,7 @@
+"""
+This module implements a function for degradation correction.
+"""
+
 import numpy as np
 
 

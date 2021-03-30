@@ -71,9 +71,9 @@ if __name__ == "__main__":
 
     plot_signals(
         [
-            (t_a_nn, a_nn, "$a$", False),
-            (t_b_nn, b_nn, "$b$", False),
-            (signal_generator.x, signal_generator.y, "$s$", False),
+            (t_a_nn, a_nn, "$a$", {}),
+            (t_b_nn, b_nn, "$b$", {}),
+            (signal_generator.x, signal_generator.y, "$s$", {}),
         ],
         results_dir=results_dir,
         title="signals",
@@ -103,9 +103,9 @@ if __name__ == "__main__":
 
     plot_signals(
         [
-            (t_m, a_m_c, "$a_c$", False),
-            (t_m, b_m_c, "$b_c$", False),
-            (signal_generator.x, signal_generator.y, "$s$", False),
+            (t_m, a_m_c, "$a_c$", {}),
+            (t_m, b_m_c, "$b_c$", {}),
+            (signal_generator.x, signal_generator.y, "$s$", {}),
         ],
         results_dir=results_dir,
         title="signals_corrected",
@@ -115,13 +115,13 @@ if __name__ == "__main__":
 
     plot_signals(
         [
-            (t_a_nn, d_a_c, "$d_c(e_a(t))$", False),
-            (t_b_nn, d_b_c, "$d_c(e_b(t))$", False),
+            (t_a_nn, d_a_c, "$d_c(e_a(t))$", {}),
+            (t_b_nn, d_b_c, "$d_c(e_b(t))$", {}),
             (
                 t_a_nn,
                 signal_generator.degradation_model(e_a_nn),
                 "$d(e_a(t))$",
-                False,
+                {},
             ),
         ],
         results_dir=results_dir,

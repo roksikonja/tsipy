@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict, Union, Optional, NoReturn
+from typing import List, Dict, Optional
 from typing import Tuple
 
 import matplotlib as mpl
@@ -69,7 +69,7 @@ def configure_plot(
     y_label: str = None,
     log_scale_x: bool = False,
     log_scale_y: bool = False,
-) -> NoReturn:
+) -> None:
     """Helper function for configuring axes parameters."""
     if x_ticker:
         ax.xaxis.set_major_locator(ticker.MultipleLocator(x_ticker))
@@ -95,10 +95,7 @@ def configure_plot(
 
 def plot_signals(
     signal_fiveplets: List[
-        Union[
-            Tuple[np.ndarray, np.ndarray, str, bool],
-            Tuple[np.ndarray, np.ndarray, str, bool, Dict],
-        ]
+        Tuple[np.ndarray, np.ndarray, str, Dict],
     ],
     results_dir: Optional[str] = None,
     title: Optional[str] = None,
@@ -121,21 +118,9 @@ def plot_signals(
         x = x[index_x_nn]
 
         label = signal_fiveplet[2]
-        scatter = signal_fiveplet[3]
-        if len(signal_fiveplet) == 5:
-            kwargs_sig = signal_fiveplet[4]
-        else:
-            kwargs_sig = dict()
+        kwargs_sig = signal_fiveplet[3]
 
-        if scatter:
-            if "marker" not in kwargs_sig:
-                kwargs_sig["marker"] = "x"
-            if "color" not in kwargs_sig:
-                kwargs_sig["color"] = "tab:red"
-
-            ax.scatter(t, x, label=label, **kwargs_sig)
-        else:
-            ax.plot(t, x, label=label, **kwargs_sig)
+        ax.plot(t, x, label=label, **kwargs_sig)
 
     configure_plot(ax, **kwargs)
 
@@ -196,7 +181,7 @@ def plot_signals_and_confidence(
 
 def plot_signals_history(
     t_m: np.ndarray,
-    signals_history: List[List[Tuple]],
+    signals_history: List[List[Tuple[np.ndarray, str]]],
     results_dir: Optional[str] = None,
     title: Optional[str] = None,
     n_rows: int = 2,
@@ -219,12 +204,7 @@ def plot_signals_history(
             x = signal_triplet[0]
             label = signal_triplet[1]
 
-            if len(signal_triplet) == 3:
-                kwargs_sig = signal_triplet[2]
-            else:
-                kwargs_sig = dict()
-
-            ax.plot(t_m, x, label=label, **kwargs_sig)
+            ax.plot(t_m, x, label=label)
 
         configure_plot(ax, **kwargs)
 

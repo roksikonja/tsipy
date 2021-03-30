@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, NoReturn, Tuple
+from typing import Any, Tuple
 
 import numpy as np
 import scipy.interpolate
@@ -14,13 +14,11 @@ class DegradationModel(ABC):
         pass
 
     @abstractmethod
-    def initial_fit(
-        self, a_m: np.ndarray, b_m: np.ndarray, e_a_m: np.ndarray
-    ) -> NoReturn:
+    def initial_fit(self, a_m: np.ndarray, b_m: np.ndarray, e_a_m: np.ndarray) -> None:
         pass
 
     @abstractmethod
-    def fit(self, ratio_m: np.ndarray, e_a_m: np.ndarray) -> NoReturn:
+    def fit(self, ratio_m: np.ndarray, e_a_m: np.ndarray) -> None:
         pass
 
 
@@ -100,15 +98,13 @@ class ExpModel(DegradationModel, ExpFamilyMixin):
     def __call__(self, e: np.ndarray) -> np.ndarray:
         return self._exp(e, *self.params)
 
-    def initial_fit(
-        self, a_m: np.ndarray, b_m: np.ndarray, e_a_m: np.ndarray
-    ) -> NoReturn:
+    def initial_fit(self, a_m: np.ndarray, b_m: np.ndarray, e_a_m: np.ndarray) -> None:
         ratio_m = np.divide(a_m, b_m)
         lambda_initial, e_0_initial = self._initial_fit(ratio_m, e_a_m)
 
         self.params = np.array([lambda_initial, e_0_initial], dtype=np.float)
 
-    def fit(self, ratio_m: np.ndarray, e_a_m: np.ndarray) -> NoReturn:
+    def fit(self, ratio_m: np.ndarray, e_a_m: np.ndarray) -> None:
         params, _ = scipy.optimize.curve_fit(
             self._exp, e_a_m, ratio_m, p0=self.initial_params, maxfev=10000
         )
@@ -129,9 +125,7 @@ class ExpLinModel(DegradationModel, ExpFamilyMixin):
     def __call__(self, e: np.ndarray) -> np.ndarray:
         return self._exp_lin(e, *self.params)
 
-    def initial_fit(
-        self, a_m: np.ndarray, b_m: np.ndarray, e_a_m: np.ndarray
-    ) -> NoReturn:
+    def initial_fit(self, a_m: np.ndarray, b_m: np.ndarray, e_a_m: np.ndarray) -> None:
         ratio_m = np.divide(a_m, b_m)
         lambda_initial, e_0_initial = self._initial_fit(ratio_m, e_a_m)
 
@@ -139,7 +133,7 @@ class ExpLinModel(DegradationModel, ExpFamilyMixin):
             [lambda_initial, e_0_initial, 0.0], dtype=np.float
         )
 
-    def fit(self, ratio_m: np.ndarray, e_a_m: np.ndarray) -> NoReturn:
+    def fit(self, ratio_m: np.ndarray, e_a_m: np.ndarray) -> None:
         params, _ = scipy.optimize.curve_fit(
             self._exp_lin,
             e_a_m,
@@ -171,15 +165,13 @@ class MRModel(DegradationModel):
             out_of_bounds=out_of_bounds,
         )
 
-    def initial_fit(
-        self, a_m: np.ndarray, b_m: np.ndarray, e_a_m: np.ndarray
-    ) -> NoReturn:
+    def initial_fit(self, a_m: np.ndarray, b_m: np.ndarray, e_a_m: np.ndarray) -> None:
         pass
 
     def __call__(self, e: np.ndarray) -> np.ndarray:
         return self._model.predict(e)
 
-    def fit(self, ratio_m: np.ndarray, e_a_m: np.ndarray) -> NoReturn:
+    def fit(self, ratio_m: np.ndarray, e_a_m: np.ndarray) -> None:
         self._model.fit(e_a_m, ratio_m)
 
     def __repr__(self) -> str:
@@ -211,15 +203,14 @@ class SmoothMRModel(DegradationModel):
             out_of_bounds=out_of_bounds,
         )
 
-    def initial_fit(
-        self, a_m: np.ndarray, b_m: np.ndarray, e_a_m: np.ndarray
-    ) -> NoReturn:
+    def initial_fit(self, a_m: np.ndarray, b_m: np.ndarray, e_a_m: np.ndarray) -> None:
         pass
 
     def __call__(self, e: np.ndarray) -> np.ndarray:
+        assert self._model is not None, "Model is not initialized."
         return self._model(e)
 
-    def fit(self, ratio_m: np.ndarray, e_a_m: np.ndarray) -> NoReturn:
+    def fit(self, ratio_m: np.ndarray, e_a_m: np.ndarray) -> None:
         self._mr_model.fit(e_a_m, ratio_m)
 
         max_exposure = e_a_m[-1]
@@ -255,14 +246,12 @@ class SmoothMRModel(DegradationModel):
 
 def load_model(degradation_model: str) -> DegradationModel:
     if degradation_model == "exp":
-        model = ExpModel()
+        return ExpModel()
     elif degradation_model == "explin":
-        model = ExpLinModel()
+        return ExpLinModel()
     elif degradation_model == "mr":
-        model = MRModel()
+        return MRModel()
     elif degradation_model == "smr":
-        model = SmoothMRModel()
+        return SmoothMRModel()
     else:
         raise ValueError("Invalid degradation model type.")
-
-    return model

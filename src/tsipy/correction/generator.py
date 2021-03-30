@@ -33,7 +33,7 @@ class SignalGenerator(object):
         self.y: np.ndarray = self.generate_signal()
 
         self.signal_names: List[str] = list(string.ascii_lowercase[:26])
-        self.signals: Dict[str, Tuple] = dict()
+        self.signals: Dict[str, Tuple[np.ndarray, np.ndarray, np.ndarray]] = dict()
 
         self.exposure_method = exposure_method
         self.degradation_model = ExpModel()
@@ -74,7 +74,9 @@ class SignalGenerator(object):
         e_nn = e[x_indices]
         return x_nn, y_nn, e_nn
 
-    def _get_signal(self, signal_name: str):
+    def _get_signal(
+        self, signal_name: str
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         if signal_name not in self.signals:
             self.generate_measurement(signal_name)
 

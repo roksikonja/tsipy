@@ -67,9 +67,9 @@ if __name__ == "__main__":
 
     plot_signals(
         [
-            (t_a, a, "$a$", False),
-            (t_b, b, "$b$", False),
-            (signal_generator.x, signal_generator.y, "$s$", False),
+            (t_a, a, "$a$", {}),
+            (t_b, b, "$b$", {}),
+            (signal_generator.x, signal_generator.y, "$s$", {}),
         ],
         results_dir=results_dir,
         title="signals",
@@ -121,8 +121,8 @@ if __name__ == "__main__":
         local_windows = tsipy.fusion.local_gp.create_windows(
             t,
             s,
-            pred_window=args.pred_window,
-            fit_window=args.fit_window,
+            pred_window_width=args.pred_window,
+            fit_window_width=args.fit_window,
         )
 
         fusion_model = tsipy.fusion.local_gp.LocalGPModel(
@@ -196,7 +196,7 @@ if __name__ == "__main__":
         for i, window in enumerate(fusion_model.windows):
             elbo = window.model.iter_elbo
             plot_signals(
-                [(np.arange(elbo.size), elbo, r"ELBO", False)],
+                [(np.arange(elbo.size), elbo, r"ELBO", {})],
                 results_dir=results_dir,
                 title=f"iter_elbo_w{i}",
                 legend="lower right",
@@ -205,7 +205,7 @@ if __name__ == "__main__":
     else:
         elbo = fusion_model.iter_elbo
         plot_signals(
-            [(np.arange(elbo.size), elbo, r"ELBO", False)],
+            [(np.arange(elbo.size), elbo, r"ELBO", {})],
             results_dir=results_dir,
             title="iter_elbo",
             legend="lower right",

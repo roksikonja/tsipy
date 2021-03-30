@@ -13,5 +13,11 @@ __pycache__/
 *~
 *$py.class
 __pypackages__/
+.mypy_cache/
+.pytest_cache/
 
 venv/
+
+docs/_build/
+docs/_static/
+docs/_templates/

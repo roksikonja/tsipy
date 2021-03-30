@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, NoReturn, Tuple
+from typing import Optional, Tuple
 
 import numpy as np
 
@@ -12,16 +12,16 @@ class FusionModel(ABC):
         pass
 
     @abstractmethod
-    def fit(self, x: np.ndarray, y: np.ndarray, **kwargs) -> NoReturn:
+    def fit(self, x: np.ndarray, y: np.ndarray, **kwargs) -> None:
         pass
 
     @abstractmethod
-    def build_model(self, *args, **kwargs) -> NoReturn:
+    def build_model(self, *args, **kwargs) -> None:
         pass
 
 
 class NormalizationClippingMixin:
-    def __init__(self, normalization: bool, clipping: bool):
+    def __init__(self, normalization: bool, clipping: bool) -> None:
         self.normalization = normalization
         self.clipping = clipping
 
@@ -34,13 +34,18 @@ class NormalizationClippingMixin:
         self, x: np.ndarray, y: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
         self._compute_normalization_values(x, y)
+        assert self.x_mean is not None, "Normalization values not computed."
+        assert self.x_std is not None, "Normalization values not computed."
+        assert self.y_mean is not None, "Normalization values not computed."
+        assert self.y_std is not None, "Normalization values not computed."
+
         x = normalize(x.copy(), self.x_mean, self.x_std)
         y = normalize(y.copy(), self.y_mean, self.y_std)
         x, y = self._clip_y_values(x, y)
 
         return x, y
 
-    def _compute_normalization_values(self, x: np.ndarray, y: np.ndarray) -> NoReturn:
+    def _compute_normalization_values(self, x: np.ndarray, y: np.ndarray) -> None:
         if self.normalization:
             self.x_mean = np.mean(x)
             self.x_std = np.std(x)

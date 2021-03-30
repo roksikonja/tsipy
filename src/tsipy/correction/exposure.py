@@ -6,6 +6,23 @@ def compute_exposure(
     method: str = "num_measurements",
     x_mean: float = 1.0,
 ) -> np.ndarray:
+    """Computes exposure of a given signal.
+
+    In literature, exposure is found under an alias exposure time.
+    If ``num_measurements`` method is selected, then the exposure equals to the number of
+    measurements up to time ``t``.
+    If ``exposure_sum`` method is selected, then the exposure equals to the cumulative sum of
+    measurement values up to time ``t``. Works only for measurements with positive values.
+    ``x_mean`` normalizes values before cumulative sum.
+
+    Examples:
+        >>> import numpy as np
+        >>> x = np.array([1.0, np.nan, 3.0, 4.0, 5.0])
+        >>> compute_exposure(x, method="num_measurements")
+        array([1., 1., 2., 3., 4.])
+        >>> compute_exposure(x, method="exposure_sum")
+        array([ 1.,  1.,  4.,  8., 13.])
+    """
     if method == "num_measurements":
         x = ~np.isnan(x)
         x = x.astype(np.float)

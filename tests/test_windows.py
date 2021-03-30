@@ -1,12 +1,12 @@
 import numpy as np
+
 import tsipy.fusion
+from tests.utils import check_window_ranges, check_array_equal
 from tsipy.correction import SignalGenerator
 from tsipy.fusion.local_gp import create_windows
 from tsipy.fusion.utils import build_labels, concatenate_labels
 from tsipy.utils import pprint_block, sort_inputs
 from tsipy_utils.visualizer import plot_signals
-
-from tests.utils import check_window_ranges, check_array_equal
 
 
 def test_ranges_one(verbose=False):
@@ -16,7 +16,9 @@ def test_ranges_one(verbose=False):
     x = np.reshape(np.linspace(0.0, 1.0, 1000 + 1), newshape=(-1, 1))
     y = np.random.randn(*x.shape)
 
-    windows = create_windows(x, y, pred_window=0.2, fit_window=0.4, verbose=verbose)
+    windows = create_windows(
+        x, y, pred_window_width=0.2, fit_window_width=0.4, verbose=verbose
+    )
     check_window_ranges(
         windows,
         x_pred_starts=np.array([-np.infty, 0.2, 0.4, 0.6, 0.8]),
@@ -32,7 +34,9 @@ def test_ranges_two(verbose=False):
     x = np.reshape(np.linspace(0.3, 1.0, 1000 + 1), newshape=(-1, 1))
     y = np.random.randn(*x.shape)
 
-    windows = create_windows(x, y, pred_window=0.3, fit_window=0.4, verbose=verbose)
+    windows = create_windows(
+        x, y, pred_window_width=0.3, fit_window_width=0.4, verbose=verbose
+    )
     check_window_ranges(
         windows,
         x_pred_starts=np.array([-np.infty, 0.6, 0.9]),
@@ -48,7 +52,9 @@ def test_ranges_three(verbose=False):
     x = np.reshape(np.linspace(-0.3, 0.7, 2000 + 1), newshape=(-1, 1))
     y = np.random.randn(*x.shape)
 
-    windows = create_windows(x, y, pred_window=1.0, fit_window=1.0, verbose=verbose)
+    windows = create_windows(
+        x, y, pred_window_width=1.0, fit_window_width=1.0, verbose=verbose
+    )
     check_window_ranges(
         windows,
         x_pred_starts=np.array([-np.infty]),
@@ -73,8 +79,8 @@ def test_windows_gather_data(verbose=False):
         windows = create_windows(
             x,
             y,
-            pred_window=np.random.uniform(0.1, 0.4),
-            fit_window=np.random.uniform(0.4, 1.0),
+            pred_window_width=np.random.uniform(0.1, 0.4),
+            fit_window_width=np.random.uniform(0.4, 1.0),
             verbose=verbose,
         )
 
@@ -97,8 +103,8 @@ def test_visualize_windows_one(show=False, verbose=False):
 
     _, ax_ful = plot_signals(
         [
-            (x_a, y_a, r"$a$", False),
-            (x_b, y_b, r"$b$", False),
+            (x_a, y_a, r"$a$", {}),
+            (x_b, y_b, r"$b$", {}),
         ],
         show=show,
     )
@@ -112,8 +118,8 @@ def test_visualize_windows_one(show=False, verbose=False):
     windows = tsipy.fusion.local_gp.create_windows(
         x,
         y,
-        pred_window=0.3,
-        fit_window=0.4,
+        pred_window_width=0.3,
+        fit_window_width=0.4,
         verbose=verbose,
     )
     for window in windows:
@@ -128,12 +134,12 @@ def test_visualize_windows_one(show=False, verbose=False):
                     x_window[label_indices, 0],
                     y_window[label_indices, 0],
                     label_str,
-                    False,
+                    {},
                 )
             )
 
         fig, ax = plot_signals(
-            [*signal_fiveplets, (signal_generator.x, signal_generator.y, "GT", False)],
+            [*signal_fiveplets, (signal_generator.x, signal_generator.y, "GT", {})],
             legend="upper left",
         )
         ax.axvline(x=window.x_pred_start, color="k")
@@ -158,8 +164,8 @@ def test_visualize_windows_two(show=False, verbose=False):
 
     _, ax_ful = plot_signals(
         [
-            (x_a, y_a, r"$a$", False),
-            (x_b, y_b, r"$b$", False),
+            (x_a, y_a, r"$a$", {}),
+            (x_b, y_b, r"$b$", {}),
         ],
         show=show,
     )
@@ -173,8 +179,8 @@ def test_visualize_windows_two(show=False, verbose=False):
     windows = tsipy.fusion.local_gp.create_windows(
         x,
         y,
-        pred_window=1.0,
-        fit_window=1.0,
+        pred_window_width=1.0,
+        fit_window_width=1.0,
         verbose=verbose,
     )
     for window in windows:
@@ -189,12 +195,12 @@ def test_visualize_windows_two(show=False, verbose=False):
                     x_window[label_indices, 0],
                     y_window[label_indices, 0],
                     label_str,
-                    False,
+                    {},
                 )
             )
 
         fig, ax = plot_signals(
-            [*signal_fiveplets, (signal_generator.x, signal_generator.y, "GT", False)],
+            [*signal_fiveplets, (signal_generator.x, signal_generator.y, "GT", {})],
             legend="upper left",
         )
         ax.axvline(x=window.x_pred_start, color="k")

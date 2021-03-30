@@ -1,4 +1,4 @@
-from typing import NoReturn, Dict
+from typing import Dict
 
 terminal_color_tokens: Dict[str, str] = {
     "white": "\033[97m",
@@ -38,13 +38,11 @@ def pformat(*args, shift: int = 50, level: int = 0, color: str = None) -> str:
     return format_str.format(*args)
 
 
-def pprint(*args, shift: int = 50, level: int = 0, color: str = None) -> NoReturn:
+def pprint(*args, shift: int = 50, level: int = 0, color: str = None) -> None:
     print(pformat(*args, shift=shift, level=level, color=color))
 
 
-def pprint_block(
-    *args, width: int = None, level: int = 0, color: str = None
-) -> NoReturn:
+def pprint_block(*args, width: int = None, level: int = 0, color: str = None) -> None:
     if level == 0:
         width = width if width is not None else 100
         block_str = "\n".join(["-" * width, pformat(*args), "-" * width])

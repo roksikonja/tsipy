@@ -16,7 +16,13 @@ def correct_degradation(
     method: str = "correct_one",
     verbose: bool = False,
     **kwargs,
-) -> Tuple[np.ndarray, np.ndarray, DegradationModel, List[Tuple]]:
+) -> Tuple[
+    np.ndarray,
+    np.ndarray,
+    DegradationModel,
+    List[Tuple[np.ndarray, np.ndarray, np.ndarray]],
+]:
+    """Selects and executes a correction algorithm."""
     model.convex = True if method == "correct_one" else False
 
     if method == "correct_one":
@@ -43,7 +49,20 @@ def correct_one(
     verbose: bool = False,
     eps: float = 1e-6,
     max_iter: int = 100,
-) -> Tuple[np.ndarray, np.ndarray, DegradationModel, List[Tuple]]:
+) -> Tuple[
+    np.ndarray,
+    np.ndarray,
+    DegradationModel,
+    List[Tuple[np.ndarray, np.ndarray, np.ndarray]],
+]:
+    """Executes degradation correction algorithm ``CorrectOne``.
+
+    The algorithm is described in `Kolar, Šikonja and Treven, 2020 <https://arxiv.org/abs/2009.03091>`_.
+    It is shown that corrected signals converge to the ground truth in the absence of measurement noise.
+
+    Returns:
+        Corrected signals ``a`` and ``b``, degradation model ``d_c(.)`` and correction history.
+    """
     del t_m
 
     ratio_m = np.divide(a_m, b_m + 1e-9)
@@ -52,8 +71,7 @@ def correct_one(
 
     a_m_c, b_m_c = a_m, b_m
     i = 0
-    converged = False
-    while i < max_iter and not converged:
+    for i in range(max_iter):
         previous_correction_triplet = correction_triplet
 
         model.fit(ratio_m, e_a_m)
@@ -78,7 +96,8 @@ def correct_one(
         )
 
         converged = delta_norm_a + delta_norm_b < eps
-        i += 1
+        if converged:
+            break
 
     if verbose:
         pprint(f"- Corrected in {i} iterations.", level=1)
@@ -96,7 +115,20 @@ def correct_both(
     verbose: bool = False,
     eps: float = 1e-6,
     max_iter: int = 100,
-) -> Tuple[np.ndarray, np.ndarray, DegradationModel, List[Tuple]]:
+) -> Tuple[
+    np.ndarray,
+    np.ndarray,
+    DegradationModel,
+    List[Tuple[np.ndarray, np.ndarray, np.ndarray]],
+]:
+    """Executes degradation correction algorithm ``CorrectBoth``.
+
+    The algorithm is described in `Kolar, Šikonja and Treven, 2020 <https://arxiv.org/abs/2009.03091>`_.
+    It is shown that corrected signals converge to the ground truth in the absence of measurement noise.
+
+    Returns:
+        Corrected signals ``a`` and ``b``, degradation model ``d_c(.)`` and correction history.
+    """
     del t_m
 
     ratio_m = np.divide(a_m, b_m + 1e-9)
@@ -105,8 +137,7 @@ def correct_both(
 
     a_m_c, b_m_c = a_m, b_m
     i = 0
-    converged = False
-    while i < max_iter and not converged:
+    for i in range(max_iter):
         previous_correction_triplet = correction_triplet
 
         model.fit(ratio_m, e_a_m)
@@ -131,7 +162,8 @@ def correct_both(
         )
 
         converged = delta_norm_a + delta_norm_b < eps
-        i += 1
+        if converged:
+            break
 
     if verbose:
         pprint(f"- Corrected in {i} iterations.", level=1)

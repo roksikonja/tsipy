@@ -1,5 +1,5 @@
 import copy
-from typing import Tuple, NoReturn, Optional
+from typing import Tuple, Optional
 
 import numpy as np
 import tensorflow as tf
@@ -15,7 +15,7 @@ class LocalGPModel(NormalizationClippingMixin):
         model: FusionModel,
         normalization: bool = True,
         clipping: bool = True,
-    ):
+    ) -> None:
         super(LocalGPModel, self).__init__(
             normalization=normalization, clipping=clipping
         )
@@ -26,6 +26,7 @@ class LocalGPModel(NormalizationClippingMixin):
         self, x: np.ndarray, verbose: bool = False
     ) -> Tuple[np.ndarray, np.ndarray]:
         # Normalize
+        assert self.windows is not None, "Windows are not initialized."
         pred_windows_ids = self.windows.create_prediction_windows_ids(x)
 
         y_mean, y_std = [], []
@@ -49,6 +50,7 @@ class LocalGPModel(NormalizationClippingMixin):
     def predict_window(
         self, x: np.ndarray, window_id: int, verbose: bool = False
     ) -> Tuple[np.ndarray, np.ndarray]:
+        assert self.windows is not None, "Windows are not initialized."
         assert (
             0 <= window_id < len(self.windows)
         ), "Window index {} is out of bounds [0, {}].".format(
@@ -59,6 +61,7 @@ class LocalGPModel(NormalizationClippingMixin):
         model = window.model
 
         # Window prediction
+        assert model is not None, "Window model is not initialized."
         y_window_mean, y_window_std = model(x)
 
         if verbose:
@@ -69,7 +72,9 @@ class LocalGPModel(NormalizationClippingMixin):
 
         return y_window_mean, y_window_std
 
-    def build_models(self, random_seed: Optional[int] = None) -> NoReturn:
+    def build_models(self, random_seed: Optional[int] = None) -> None:
+        assert self.windows is not None, "Windows are not initialized."
+
         x, y = self.windows.gather_data()
         self._compute_normalization_values(x[:, 0], y)
 
@@ -95,7 +100,7 @@ class LocalGPModel(NormalizationClippingMixin):
         random_seed: Optional[int] = None,
         verbose: bool = False,
         **kwargs
-    ) -> NoReturn:
+    ) -> None:
         self.windows = windows
         self.build_models(random_seed=random_seed)
 

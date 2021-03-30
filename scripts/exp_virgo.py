@@ -110,8 +110,8 @@ if __name__ == "__main__":
 
     plot_signals(
         [
-            (t_a_nn, a_nn, r"$a$", False),
-            (t_b_nn, b_nn, r"$b$", False),
+            (t_a_nn, a_nn, r"$a$", {}),
+            (t_b_nn, b_nn, r"$b$", {}),
         ],
         results_dir=results_dir,
         title="signals",
@@ -142,8 +142,8 @@ if __name__ == "__main__":
 
     plot_signals(
         [
-            (t_m, a_m_c, r"$a_c$", False),
-            (t_m, b_m_c, r"$b_c$", False),
+            (t_m, a_m_c, r"$a_c$", {}),
+            (t_m, b_m_c, r"$b_c$", {}),
         ],
         results_dir=results_dir,
         title="signals_corrected",
@@ -154,8 +154,8 @@ if __name__ == "__main__":
 
     plot_signals(
         [
-            (t_a_nn, d_a_c, r"$d(e_a(t))$", False),
-            (t_b_nn, d_b_c, r"$d(e_b(t))$", False),
+            (t_a_nn, d_a_c, r"$d(e_a(t))$", {}),
+            (t_b_nn, d_b_c, r"$d(e_b(t))$", {}),
         ],
         results_dir=results_dir,
         title="degradation",
@@ -255,7 +255,7 @@ if __name__ == "__main__":
 
     elbo = fusion_model.iter_elbo
     fig, ax = plot_signals(
-        [(np.arange(elbo.size), elbo, r"ELBO", False)],
+        [(np.arange(elbo.size), elbo, r"ELBO", {})],
         results_dir=results_dir,
         title="iter_elbo",
         legend="lower right",

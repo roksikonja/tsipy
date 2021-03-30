@@ -65,10 +65,10 @@ def downsampling_indices_by_max_points(
 
 def transform_time_to_unit(
     t: np.ndarray,
-    x_label: str = "year",
+    t_label: str = "year",
     start: datetime.datetime = datetime.datetime(1996, 1, 1),
 ) -> np.ndarray:
-    """Transforms time unit to `x_label` starting at `start`.
+    """Transforms time unit to `t_label` starting at `start`.
 
     Examples:
         >>> import numpy as np
@@ -77,12 +77,12 @@ def transform_time_to_unit(
         array([1996.  , 1996.25, 1996.5 , 1996.75, 1997.  ])
 
     """
-    if x_label == "year":
+    if t_label == "year":
         t = np.array(
             [start.year + ((start.timetuple().tm_yday - 1) + day) / 365.25 for day in t]
         )
     else:
-        raise ValueError("Invalid value for x_label {}.".format(x_label))
+        raise ValueError("Invalid value for t_label {}.".format(t_label))
 
     return t
 

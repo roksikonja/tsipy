@@ -23,8 +23,8 @@ def test_equivalence_localgp_and_svgp(show=False, verbose=False):
 
     plot_signals(
         [
-            (x_a, y_a, "$a$", False),
-            (x_b, y_b, "$b$", False),
+            (x_a, y_a, "$a$", {}),
+            (x_b, y_b, "$b$", {}),
         ],
         show=show,
     )
@@ -63,8 +63,8 @@ def test_equivalence_localgp_and_svgp(show=False, verbose=False):
     local_windows = tsipy.fusion.local_gp.create_windows(
         x,
         y,
-        pred_window=1.0,
-        fit_window=1.0,
+        pred_window_width=1.0,
+        fit_window_width=1.0,
         verbose=verbose,
     )
     fusion_model_local = tsipy.fusion.local_gp.LocalGPModel(
@@ -80,9 +80,9 @@ def test_equivalence_localgp_and_svgp(show=False, verbose=False):
     pprint_block("Check results and visualize", color="yellow", level=1)
     plot_signals(
         [
-            (x_out[:, 0], y_out_mean_local + 1, "LocalGP +1", False),
-            (x_out[:, 0], y_out_mean_svgp - 1, "SVGP -1", False),
-            (signal_generator.x, signal_generator.y, "GT", False),
+            (x_out[:, 0], y_out_mean_local + 1, "LocalGP +1", {}),
+            (x_out[:, 0], y_out_mean_svgp - 1, "SVGP -1", {}),
+            (signal_generator.x, signal_generator.y, "GT", {}),
         ],
         legend="upper left",
         show=show,
@@ -111,8 +111,8 @@ def test_visualize_localgp(show=False, verbose=False):
 
     _, ax_ful = plot_signals(
         [
-            (x_a, y_a, r"$a$", False),
-            (x_b, y_b, r"$b$", False),
+            (x_a, y_a, r"$a$", {}),
+            (x_b, y_b, r"$b$", {}),
         ],
         show=show,
     )
@@ -133,8 +133,8 @@ def test_visualize_localgp(show=False, verbose=False):
     local_windows = tsipy.fusion.local_gp.create_windows(
         x,
         y,
-        pred_window=0.3,
-        fit_window=0.4,
+        pred_window_width=0.3,
+        fit_window_width=0.4,
         verbose=verbose,
     )
     fusion_model_local = tsipy.fusion.local_gp.LocalGPModel(

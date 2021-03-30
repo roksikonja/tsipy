@@ -1,11 +1,12 @@
-from typing import Optional, Tuple, List, NoReturn, Union
+from typing import Optional, Tuple, List, Union
 
 import gpflow as gpf
 import numpy as np
 import tensorflow as tf
 from gpflow.utilities.utilities import tabulate_module_summary, default_summary_fmt
-from tsipy.fusion.core import NormalizationClippingMixin, FusionModel
-from tsipy.utils import (
+
+from ..fusion.core import NormalizationClippingMixin, FusionModel
+from ..utils import (
     normalize,
     denormalize,
     find_nearest_indices,
@@ -38,8 +39,17 @@ class SVGPModel(NormalizationClippingMixin, FusionModel):
     def __call__(
         self, x: Union[np.ndarray, tf.Tensor]
     ) -> Tuple[np.ndarray, np.ndarray]:
-        x: Union[np.ndarray, tf.Tensor] = normalize(x.copy(), self.x_mean, self.x_std)
-        y_mean, y_var = self._model.predict_y(x)
+        assert self.x_mean is not None, "Normalization values not computed."
+        assert self.x_std is not None, "Normalization values not computed."
+        assert self.y_mean is not None, "Normalization values not computed."
+        assert self.y_std is not None, "Normalization values not computed."
+
+        x_norm: Union[np.ndarray, tf.Tensor] = normalize(
+            np.copy(x), self.x_mean, self.x_std
+        )
+
+        assert self._model is not None, "Model is not initialized."
+        y_mean, y_var = self._model.predict_y(x_norm)
 
         y_mean = y_mean.numpy()
         y_std = np.sqrt(y_var.numpy())
@@ -53,7 +63,7 @@ class SVGPModel(NormalizationClippingMixin, FusionModel):
         x: np.ndarray,
         x_inducing: Optional[np.ndarray] = None,
         random_seed: Optional[int] = None,
-    ) -> NoReturn:
+    ) -> None:
         self.set_random_seed(random_seed)
 
         # Inducing variables
@@ -90,7 +100,7 @@ class SVGPModel(NormalizationClippingMixin, FusionModel):
         n_evals: int = 5,
         random_seed: Optional[int] = None,
         verbose: bool = False,
-    ) -> NoReturn:
+    ) -> None:
         x, y = self.normalize_and_clip(x, y)
 
         x = np.atleast_2d(x)
@@ -123,9 +133,11 @@ class SVGPModel(NormalizationClippingMixin, FusionModel):
         n_prints: int = 5,
         x_val: Optional[np.ndarray] = None,
         n_evals: int = 5,
-    ) -> NoReturn:
+    ) -> None:
         iter_elbo = []
         train_iter = iter(dataset.batch(batch_size))
+
+        assert self._model is not None, "Model is not initialized."
         training_loss = self._model.training_loss_closure(train_iter, compile=True)
         optimizer = tf.optimizers.Adam(learning_rate=learning_rate)
 
@@ -155,7 +167,7 @@ class SVGPModel(NormalizationClippingMixin, FusionModel):
         return tabulate_module_summary(self._model, default_summary_fmt())
 
     @staticmethod
-    def set_random_seed(random_seed: Optional[int] = None):
+    def set_random_seed(random_seed: Optional[int] = None) -> None:
         if random_seed is not None:
             np.random.seed(random_seed)
             tf.random.set_seed(random_seed)

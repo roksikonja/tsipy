@@ -21,7 +21,6 @@ def test_degradation():
 
             a = data["a"].values
             b = data["b"].values
-            t = data["t"].values
 
             # Compute exposure
             e_a = tsipy.correction.compute_exposure(a)

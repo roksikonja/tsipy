@@ -1,4 +1,4 @@
-from typing import List, NoReturn, Iterator, Optional, Tuple
+from typing import List, Iterator, Optional, Tuple
 
 import numpy as np
 
@@ -24,7 +24,7 @@ class Window:
         data_end_id: int,
         x: np.ndarray,
         y: np.ndarray,
-    ):
+    ) -> None:
         self.x_pred_start = x_pred_start
         self.x_pred_end = x_pred_end
         self.x_pred_mid = x_pred_mid
@@ -67,8 +67,8 @@ class Windows:
         self,
         x: np.ndarray,
         y: np.ndarray,
-    ):
-        self._list: List = []
+    ) -> None:
+        self._list: List[Window] = []
 
         self.x: np.ndarray = np.atleast_2d(x)
         self.y: np.ndarray = y.reshape(-1, 1)
@@ -91,7 +91,7 @@ class Windows:
     def __getitem__(self, key: int) -> Window:
         return self._list[key]
 
-    def add_window(self, window: Window) -> NoReturn:
+    def add_window(self, window: Window) -> None:
         self._list.append(window)
 
     def gather_data(self) -> Tuple[np.ndarray, np.ndarray]:
@@ -146,7 +146,7 @@ class Windows:
 
 
 def create_prediction_windows(
-    x: np.ndarray, pred_window: float, verbose: bool = False
+    x: np.ndarray, pred_window_width: float, verbose: bool = False
 ) -> List[Tuple[float, float, float]]:
     """
     Returns: A list of (x_start, x_end, x_mid) triplets corresponding to the prediction window bounds and
@@ -157,18 +157,18 @@ def create_prediction_windows(
 
     pred_windows = []
     x_pred_start = -np.infty
-    for x_pred_end in np.arange(x_min, x_max, pred_window)[1:]:
+    for x_pred_end in np.arange(x_min, x_max, pred_window_width)[1:]:
         if x_pred_start > -np.infty:
-            x_pred_mid = x_pred_start + pred_window / 2.0
+            x_pred_mid = x_pred_start + pred_window_width / 2.0
         else:
-            x_pred_mid = x_min + pred_window / 2.0
+            x_pred_mid = x_min + pred_window_width / 2.0
 
         pred_windows.append((x_pred_start, x_pred_end, x_pred_mid))
         x_pred_start = x_pred_end
 
     # If statement is necessary when there is only one window
     x_pred_mid = x_pred_start if x_pred_start > -np.infty else x_min
-    x_pred_mid += pred_window / 2.0
+    x_pred_mid += pred_window_width / 2.0
 
     pred_windows.append((x_pred_start, np.infty, x_pred_mid))
 
@@ -184,7 +184,7 @@ def create_prediction_windows(
 
 def create_fit_windows(
     x: np.ndarray,
-    fit_window: float,
+    fit_window_width: float,
     pred_windows: List[Tuple[float, float, float]],
     verbose: bool = False,
 ) -> List[Tuple[float, float]]:
@@ -192,8 +192,8 @@ def create_fit_windows(
 
     fit_windows = []
     for x_pred_start, x_pred_end, x_pred_mid in pred_windows:
-        x_fit_start = max(x_min, x_pred_mid - fit_window / 2.0)
-        x_fit_end = min(x_max, x_pred_mid + fit_window / 2.0)
+        x_fit_start = max(x_min, x_pred_mid - fit_window_width / 2.0)
+        x_fit_end = min(x_max, x_pred_mid + fit_window_width / 2.0)
         fit_windows.append((x_fit_start, x_fit_end))
 
     if verbose:
@@ -208,15 +208,15 @@ def create_fit_windows(
 def create_windows(
     x: np.ndarray,
     y: np.ndarray,
-    pred_window: float,
-    fit_window: float,
+    pred_window_width: float,
+    fit_window_width: float,
     verbose: bool = False,
 ) -> Windows:
     assert is_sorted(x[:, 0]), "Input array x is not sorted in dimension 0."
     assert (
-        pred_window <= fit_window
+        pred_window_width <= fit_window_width
     ), "Prediction window {} is wider than training window {}".format(
-        pred_window, fit_window
+        pred_window_width, fit_window_width
     )
 
     if verbose:
@@ -235,8 +235,8 @@ def create_windows(
 
     windows = Windows(x, y)
 
-    pred_windows = create_prediction_windows(windows.x, pred_window)
-    fit_windows = create_fit_windows(windows.x, fit_window, pred_windows)
+    pred_windows = create_prediction_windows(windows.x, pred_window_width)
+    fit_windows = create_fit_windows(windows.x, fit_window_width, pred_windows)
 
     for pred_window, fit_window in zip(pred_windows, fit_windows):
         start_id, end_id = get_window_indices(

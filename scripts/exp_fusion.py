@@ -65,7 +65,7 @@ def load_dataset(dataset_name: str) -> Tuple[pd.DataFrame, np.ndarray]:
         t_org = data["t"].values.copy()
         data["t"] = transform_time_to_unit(
             data["t"] - data["t"][0],
-            x_label="year",
+            t_label="year",
             start=datetime.datetime(1996, 1, 1),
         )
     elif dataset_name == "acrim":
@@ -85,7 +85,7 @@ def load_dataset(dataset_name: str) -> Tuple[pd.DataFrame, np.ndarray]:
         t_org = data["t"].values.copy()
         data["t"] = transform_time_to_unit(
             data["t"] - data["t"][0],
-            x_label="year",
+            t_label="year",
             start=datetime.datetime(1980, 1, 1),
         )
     else:
@@ -121,9 +121,9 @@ if __name__ == "__main__":
 
     plot_signals(
         [
-            (t_a, a, r"$a$", False),
-            (t_b, b, r"$b$", False),
-            (t_c, c, r"$c$", False),
+            (t_a, a, r"$a$", {}),
+            (t_b, b, r"$b$", {}),
+            (t_c, c, r"$c$", {}),
         ],
         results_dir=results_dir,
         title="signals",
@@ -137,9 +137,9 @@ if __name__ == "__main__":
     freqs_c, psd_c = scipy.signal.welch(c, fs=1.0, nperseg=1024)
     plot_signals(
         [
-            (freqs_a, psd_a, r"$a$", False),
-            (freqs_b, psd_b, r"$b$", False),
-            (freqs_c, psd_c, r"$c$", False),
+            (freqs_a, psd_a, r"$a$", {}),
+            (freqs_b, psd_b, r"$b$", {}),
+            (freqs_c, psd_c, r"$c$", {}),
         ],
         results_dir=results_dir,
         title="signals_psd",
@@ -187,8 +187,8 @@ if __name__ == "__main__":
         local_windows = tsipy.fusion.local_gp.create_windows(
             t,
             s,
-            pred_window=args.pred_window,
-            fit_window=args.fit_window,
+            pred_window_width=args.pred_window,
+            fit_window_width=args.fit_window,
             verbose=True,
         )
 
@@ -253,10 +253,10 @@ if __name__ == "__main__":
     freqs_s, psd_s = scipy.signal.welch(s_out_mean, fs=1.0, nperseg=1024)
     fig, ax = plot_signals(
         [
-            (freqs_a, psd_a, r"$a$", False),
-            (freqs_b, psd_b, r"$b$", False),
-            (freqs_c, psd_c, r"$c$", False),
-            (freqs_s, psd_s, r"$s$", False),
+            (freqs_a, psd_a, r"$a$", {}),
+            (freqs_b, psd_b, r"$b$", {}),
+            (freqs_c, psd_c, r"$c$", {}),
+            (freqs_s, psd_s, r"$s$", {}),
         ],
         results_dir=results_dir,
         title="signals_fused_psd",
@@ -272,7 +272,7 @@ if __name__ == "__main__":
         for i, window in enumerate(fusion_model.windows):
             elbo = window.model.iter_elbo
             plot_signals(
-                [(np.arange(elbo.size), elbo, r"ELBO", False)],
+                [(np.arange(elbo.size), elbo, r"ELBO", {})],
                 results_dir=results_dir,
                 title=f"iter_elbo_w{i}",
                 legend="lower right",
@@ -281,7 +281,7 @@ if __name__ == "__main__":
     else:
         elbo = fusion_model.iter_elbo
         plot_signals(
-            [(np.arange(elbo.size), elbo, r"ELBO", False)],
+            [(np.arange(elbo.size), elbo, r"ELBO", {})],
             results_dir=results_dir,
             title="iter_elbo",
             legend="lower right",

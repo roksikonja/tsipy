@@ -44,3 +44,8 @@ Demos can be found in ```./scripts```.
           archivePrefix={arXiv},
           primaryClass={cs.LG}
     }
+
+## CI/CD
+
+    pytest tests
+    mypy .\src

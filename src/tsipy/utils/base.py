@@ -1,5 +1,4 @@
-from numbers import Real
-from typing import Tuple, Union
+from typing import Tuple
 
 import numpy as np
 
@@ -27,21 +26,9 @@ def sort_inputs(
     return x, y
 
 
-def normalize(
-    x: Union[np.ndarray, float], mean: float, scale: float
-) -> Union[np.ndarray, float]:
-    """Normalize array in the first dimension as given by
-            y = (x - mean) / scale.
-
-    Args:
-        x: Array
-        mean:
-        scale:
-
-    Returns:
-        Normalized array.
-    """
-    if isinstance(x, Real) or len(x.shape) <= 1:
+def normalize(x: np.ndarray, mean: float, scale: float) -> np.ndarray:
+    """Normalize array in the first dimension as given by y = (x - mean) / scale."""
+    if len(x.shape) <= 1:
         y = (x - mean) / scale
     else:
         y = x
@@ -49,10 +36,9 @@ def normalize(
     return y
 
 
-def denormalize(
-    y: Union[np.ndarray, float], mean: float, scale: float
-) -> Union[np.ndarray, float]:
-    if isinstance(y, Real) or len(y.shape) <= 1:
+def denormalize(y: np.ndarray, mean: float, scale: float) -> np.ndarray:
+    """Denormalize array in the first dimension as given by x = y * scale + mean."""
+    if len(y.shape) <= 1:
         x = scale * y + mean
     else:
         x = y

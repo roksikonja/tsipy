@@ -1,14 +1,11 @@
 import numpy as np
 
 import tsipy.correction
-from tsipy.utils import pprint
 from tests.utils import check_array_approximate
 
 
-def test_degradation():
+def test_degradation(tolerance: float = 0.01) -> None:
     for i in range(5):
-        pprint("\n- Random seed:", str(i))
-
         for model_name in ["exp", "explin", "mr"]:
             np.random.seed(i)
 
@@ -65,14 +62,14 @@ def test_degradation():
             a_ids_nn = signal_generator.get_indices_nn("a")
             b_ids_nn = signal_generator.get_indices_nn("b")
 
-            pprint("- Model:", model_name, level=1)
-
             # Check exposure computation
             check_array_approximate(signal_generator.get_exposure_nn("a"), e_a_nn)
             check_array_approximate(signal_generator.get_exposure_nn("b"), e_b_nn)
-            pprint("- Exposure:", "OK", level=1)
 
             # Check convergence
-            check_array_approximate(signal_generator.y[a_ids_nn], a_c_nn)
-            check_array_approximate(signal_generator.y[b_ids_nn], b_c_nn)
-            pprint("- Convergence:", "OK\n", level=1)
+            check_array_approximate(
+                signal_generator.y[a_ids_nn], a_c_nn, tolerance=tolerance
+            )
+            check_array_approximate(
+                signal_generator.y[b_ids_nn], b_c_nn, tolerance=tolerance
+            )

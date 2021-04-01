@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import gpflow as gpf
 import numpy as np
@@ -6,7 +6,6 @@ import tensorflow as tf
 from gpflow.utilities import positive
 
 
-# noinspection PyPep8Naming
 class MultiWhiteKernel(gpf.kernels.Kernel):
     """
     Implementation guidelines.
@@ -16,7 +15,7 @@ class MultiWhiteKernel(gpf.kernels.Kernel):
 
     def __init__(
         self,
-        labels: np.ndarray,
+        labels: Tuple[int, ...],
         variances: Optional[np.ndarray] = None,
         active_dims: List[int] = None,
     ):
@@ -29,7 +28,7 @@ class MultiWhiteKernel(gpf.kernels.Kernel):
             σ_i²  is the noise variance parameter of i-th instrument.
         """
         super().__init__(active_dims=active_dims)
-        self.labels = labels
+        self.labels = np.array(labels)
         self.n = len(labels)
 
         if variances is None:
@@ -39,6 +38,7 @@ class MultiWhiteKernel(gpf.kernels.Kernel):
             variances, transform=positive(), dtype=gpf.default_float()
         )
 
+    # noinspection PyPep8Naming
     def K(self, X: tf.Tensor, X2: Optional[tf.Tensor] = None) -> tf.Tensor:
         if X2 is None:
             diag = self.K_diag(X)
@@ -47,6 +47,7 @@ class MultiWhiteKernel(gpf.kernels.Kernel):
             shape = tf.concat([tf.shape(X)[:-1], tf.shape(X2)[:-1]], axis=0)
             return tf.zeros(shape, dtype=X.dtype)
 
+    # noinspection PyPep8Naming
     def K_diag(self, X: tf.Tensor) -> tf.Tensor:
         X = tf.squeeze(X)
 

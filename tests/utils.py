@@ -47,11 +47,10 @@ def check_array_approximate(
     check_array_shape(a, b)
 
     norm_a = np.linalg.norm(a)
-    norm_b = np.linalg.norm(b)
-    error = np.square(np.linalg.norm(a - b)) / (norm_a * norm_b)
+    error = np.linalg.norm(a - b) / norm_a
     assert (
         error < tolerance
-    ), "Array a not equal to array b. ({:.3f} < {:.3f}, error < tolerance)".format(
+    ), "Array a not equal to array b. ({:.6f} < {}, error < tolerance)".format(
         error, tolerance
     )
 
@@ -61,3 +60,15 @@ def check_array_shape(a: np.ndarray, b: np.ndarray) -> None:
     assert np.array_equal(
         a.shape, b.shape
     ), "Array a {} and b {} shape mismatched.".format(a.shape, b.shape)
+
+
+def check_array_1d(a: np.ndarray) -> None:
+    """Checks if array is one dimensional."""
+    assert len(a.shape) == 1, "Array a with shape {} is not 1D.".format(a.shape)
+    assert a.ndim == 1, "Array a with shape {} is not 1D.".format(a.shape)
+
+
+def check_array_2d(a: np.ndarray) -> None:
+    """Checks if array is one dimensional."""
+    assert len(a.shape) == 2, "Array a with shape {} is not 2D.".format(a.shape)
+    assert a.ndim == 2, "Array a with shape {} is not 2D.".format(a.shape)

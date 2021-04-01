@@ -187,9 +187,10 @@ class SmoothMRModel(DegradationModel):
         out_of_bounds: str = "clip",
         number_of_points: int = 999,
         lam: float = 1.0,
+        convex: bool = False,
     ):
         self.name = "SmoothMR"
-        self.convex = True
+        self.convex = convex
 
         self.increasing = increasing
         self.number_of_points = number_of_points

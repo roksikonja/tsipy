@@ -19,6 +19,11 @@ def is_sorted(x: np.ndarray) -> bool:
 def sort_inputs(
     x: np.ndarray, y: np.ndarray, sort_axis: int
 ) -> Tuple[np.ndarray, np.ndarray]:
+    if len(x.shape) != 2:
+        raise ValueError("Array x with shape {} is not 2D.".format(x.shape))
+    if len(y.shape) != 2:
+        raise ValueError("Array y with shape {} is not 2D.".format(y.shape))
+
     x_indices_sorted = np.argsort(x[:, sort_axis])
 
     x = x[x_indices_sorted, :]
@@ -85,19 +90,23 @@ def find_nearest_indices(
     return indices
 
 
-def clipping_indices(x: np.ndarray, n_std: int = 5) -> np.ndarray:
-    """
-    Return clip indices in x_mean - n_std * x_std >= x or x >= x_mean + n_std * x_std.
-    """
+def nonclipped_indices(x: np.ndarray, n_scale: float = 5.0) -> np.ndarray:
+    """Return non-clipped indices, such that x or x_mean + n_std * x_std >= x >= x_mean - n_std * x_std. """
     clip_mean, clip_std = np.mean(x), np.std(x)
-    lower_indices = np.greater_equal(x, clip_mean - n_std * clip_std)
-    upper_indices = np.less_equal(x, clip_mean + n_std * clip_std)
 
-    clip_indices = np.logical_and(lower_indices, upper_indices)
-    return clip_indices
+    lower_ids = np.greater_equal(x, clip_mean - n_scale * clip_std)
+    upper_ids = np.less_equal(x, clip_mean + n_scale * clip_std)
+
+    nonclipped_ids = np.logical_and(lower_ids, upper_ids)
+    return nonclipped_ids
 
 
 def closest_binary_search(array: np.ndarray, value: float) -> int:
+    """Finds and returns the index of the closest element to ``value``.
+
+    Args:
+        array: Sorted 1D array.
+    """
     left, right = 0, len(array) - 1
     best_id = left
 
@@ -137,7 +146,7 @@ def get_window_indices(x: np.ndarray, x_start: float, x_end: float) -> Tuple[int
     # handle a range of equal values
     if x_start_id != 0:
         while x[x_start_id - 1] == x_start:
-            x_start_id = x_start_id - 1
+            x_start_id -= 1
 
             if x_start_id == 0:
                 break
@@ -146,7 +155,7 @@ def get_window_indices(x: np.ndarray, x_start: float, x_end: float) -> Tuple[int
     # handle a range of equal values
     if x_end_id != (x.size - 1):
         while x[x_end_id + 1] == x_end:
-            x_end_id = x_end_id + 1
+            x_end_id += 1
 
             if x_end_id == (x.size - 1):
                 break

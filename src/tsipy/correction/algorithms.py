@@ -26,9 +26,10 @@ def correct_degradation(
     DegradationModel,
     List[Tuple[np.ndarray, np.ndarray, np.ndarray]],
 ]:
-    """Selects and executes a correction algorithm."""
-    model.convex = True if method == "correct_one" else False
+    """Selects and executes a correction algorithm.
 
+    This is a wrapper function for :func:`correct_one` and :func:`correct_both`.
+    """
     if method == "correct_one":
         a_m_c, b_m_c, model, history = correct_one(
             t_m, a_m, e_a_m, b_m, e_b_m, model, verbose, **kwargs

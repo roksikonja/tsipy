@@ -2,43 +2,63 @@ import copy
 from typing import Tuple, Optional
 
 import numpy as np
-import tensorflow as tf
 
-from .windows import Windows
-from ..core import FusionModel, NormalizationClippingMixin
+from .windows import Windows, create_windows
+from ..core import FusionModel, NormalizeAndClip
 from ...utils import pprint
 
 
-class LocalGPModel(NormalizationClippingMixin):
+class LocalGPModel(FusionModel):
     def __init__(
         self,
         model: FusionModel,
+        pred_window_width: float,
+        fit_window_width: float,
         normalization: bool = True,
         clipping: bool = True,
     ) -> None:
-        super(LocalGPModel, self).__init__(
-            normalization=normalization, clipping=clipping
-        )
+        # Helper object for data normalization and clipping
+        self._nc = NormalizeAndClip(normalization=normalization, clipping=clipping)
+
+        # Local windows attributes and parameters
+        self.pred_window_width = pred_window_width
+        self.fit_window_width = fit_window_width
+        self._windows: Optional[Windows] = None
+
+        # Local GP model that is trained within each window
         self._model = model
-        self.windows: Optional[Windows] = None
+
+    @property
+    def windows(self) -> Windows:
+        assert self._windows is not None, "Windows are not initialized."
+        return self._windows
 
     def __call__(
         self, x: np.ndarray, verbose: bool = False
     ) -> Tuple[np.ndarray, np.ndarray]:
-        # Normalize
-        assert self.windows is not None, "Windows are not initialized."
-        pred_windows_ids = self.windows.create_prediction_windows_ids(x)
+        """Equivalent to :member:`predict` method."""
+        y_mean, y_std = self.predict(x, verbose=verbose)
+        return y_mean, y_std
+
+    def predict(
+        self, x: np.ndarray, verbose: bool = False
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        assert self._windows is not None, "Windows are not initialized."
+
+        # Split x into prediction windows
+        pred_windows_ids = self._windows.create_prediction_windows_ids(x)
 
         y_mean, y_std = [], []
-        for window_id, window in enumerate(self.windows):
+        for window_id in range(len(self._windows)):
+            # Extract part of x in a given window
             start_id, end_id = pred_windows_ids[window_id]
-
             x_window = x[start_id : end_id + 1, :]
-            y_window_mean, y_window_std = self.predict_window(
+
+            y_mean_window, y_std_window = self.predict_window(
                 x=x_window, window_id=window_id, verbose=verbose
             )
-            y_mean.append(y_window_mean)
-            y_std.append(y_window_std)
+            y_mean.append(y_mean_window)
+            y_std.append(y_std_window)
 
             if verbose:
                 pprint("- Indices:", start_id, end_id, level=1)
@@ -47,53 +67,97 @@ class LocalGPModel(NormalizationClippingMixin):
         y_std = np.hstack(y_std)
         return y_mean, y_std
 
-    def predict_window(
-        self, x: np.ndarray, window_id: int, verbose: bool = False
-    ) -> Tuple[np.ndarray, np.ndarray]:
-        assert self.windows is not None, "Windows are not initialized."
-        assert (
-            0 <= window_id < len(self.windows)
-        ), "Window index {} is out of bounds [0, {}].".format(
-            window_id, len(self.windows) - 1
-        )
+    def _build(self) -> None:
+        assert self._windows is not None, "Windows are not initialized."
 
-        window = self.windows[window_id]
-        model = window.model
+        x, y = self._windows.gather_data()
+        assert len(x.shape) == 2, "Input x with shape {} is not 2D.".format(x.shape)
+        assert len(y.shape) == 2, "Input y with shape {} is not 2D.".format(y.shape)
 
-        # Window prediction
-        assert model is not None, "Window model is not initialized."
-        y_window_mean, y_window_std = model(x)
+        self._nc.compute_normalization_values(x, y)
 
-        if verbose:
-            print(str(window) + "\n")
-            pprint("- x_window:", x.shape, level=1)
-            pprint("- y_mean:", y_window_mean.shape, level=1)
-            pprint("- y_std:", y_window_std.shape, level=1)
-
-        return y_window_mean, y_window_std
-
-    def build_models(self, random_seed: Optional[int] = None) -> None:
-        assert self.windows is not None, "Windows are not initialized."
-
-        x, y = self.windows.gather_data()
-        self._compute_normalization_values(x[:, 0], y)
-
-        self._model.normalization = self.normalization
-        self._model.clipping = self.clipping
-
-        for window in self.windows:
+        for window in self._windows:
             window.model = copy.deepcopy(self._model)
-            window.model.build_model(
-                window.x, window.x_inducing, random_seed=random_seed
-            )
-
-            # Update normalize values of the model
-            window.model.x_mean = self.x_mean
-            window.model.x_std = self.x_std
-            window.model.y_mean = self.y_mean
-            window.model.y_std = self.y_std
 
     def fit(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        x_inducing: Optional[np.ndarray] = None,
+        batch_size: int = 200,
+        max_iter: int = 10000,
+        learning_rate: float = 0.005,
+        n_prints: int = 5,
+        x_val: Optional[np.ndarray] = None,
+        n_evals: int = 5,
+        random_seed: Optional[int] = None,
+        verbose: bool = False,
+    ) -> None:
+        self._windows = create_windows(
+            x,
+            y,
+            pred_window_width=self.pred_window_width,
+            fit_window_width=self.fit_window_width,
+            verbose=verbose,
+        )
+        self._build()
+        self._fit(
+            batch_size=batch_size,
+            max_iter=max_iter,
+            learning_rate=learning_rate,
+            n_prints=n_prints,
+            n_evals=n_evals,
+            random_seed=random_seed,
+            verbose=verbose,
+        )
+
+    def _fit(
+        self,
+        batch_size: int = 200,
+        max_iter: int = 10000,
+        learning_rate: float = 0.005,
+        n_prints: int = 5,
+        n_evals: int = 5,
+        random_seed: Optional[int] = None,
+        verbose: bool = False,
+    ) -> None:
+        assert self._windows is not None, "Windows are not initialized."
+
+        for window in self._windows:
+            if verbose:
+                print(str(window) + "\n")
+
+            model = window.model
+
+            # Normalize values
+            x_window = self._nc.normalize_x(window.x)
+            y_window = self._nc.normalize_y(window.y)
+
+            x_inducing_window = (
+                self._nc.normalize_x(window.x_inducing)
+                if window.x_inducing is not None
+                else None
+            )
+            x_val_window = (
+                self._nc.normalize_x(window.x_val) if window.x_val is not None else None
+            )
+
+            # Train window model
+            model.fit(
+                x=x_window,
+                y=y_window,
+                x_inducing=x_inducing_window,
+                batch_size=batch_size,
+                max_iter=max_iter,
+                learning_rate=learning_rate,
+                n_prints=n_prints,
+                x_val=x_val_window,
+                n_evals=n_evals,
+                random_seed=random_seed,
+                verbose=verbose,
+            )
+
+    def fit_from_windows(
         self,
         windows: Windows,
         n_prints: int = 5,
@@ -101,24 +165,41 @@ class LocalGPModel(NormalizationClippingMixin):
         verbose: bool = False,
         **kwargs
     ) -> None:
-        self.windows = windows
-        self.build_models(random_seed=random_seed)
+        self._windows = windows
+        self._build()
+        self._fit(n_prints=n_prints, verbose=verbose, **kwargs)
 
-        for window in self.windows:
-            if verbose:
-                print(str(window) + "\n")
+    def predict_window(
+        self, x: np.ndarray, window_id: int, verbose: bool = False
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        assert self._windows is not None, "Windows are not initialized."
+        assert (
+            0 <= window_id < len(self._windows)
+        ), "Window index {} is out of bounds.".format(window_id)
+        assert len(x.shape) == 2, "Input x with shape {} is not 2D.".format(x.shape)
 
-            model = window.model
-            x_window, y_window = self.normalize_and_clip(window.x, window.y)
-            x_window = np.atleast_2d(x_window)
-            y_window = y_window.reshape(-1, 1)
+        window = self._windows[window_id]
+        model = window.model
 
-            # TF Dataset
-            dataset = tf.data.Dataset.from_tensor_slices((x_window, y_window))
-            dataset = dataset.shuffle(buffer_size=window.x.shape[0])
-            dataset = dataset.repeat()
+        # Window prediction
+        assert model is not None, "Window model is not initialized."
 
-            # Train
-            model.train(
-                dataset=dataset, n_prints=n_prints, x_val=window.x_val, **kwargs
-            )
+        # Normalize
+        x = self._nc.normalize_x(x)
+
+        # Predict
+        y_mean_window, y_std_window = model(x)
+        y_mean_window = np.reshape(y_mean_window, newshape=(-1, 1))
+        y_std_window = np.reshape(y_std_window, newshape=(-1, 1))
+
+        # Denormalize
+        y_mean_window = self._nc.denormalize_y(y_mean_window)
+        y_std_window = self._nc.denormalize_y(y_std_window, y_shift=0.0)
+
+        if verbose:
+            print(str(window) + "\n")
+            pprint("- x_window:", x.shape, level=1)
+            pprint("- y_mean:", y_mean_window.shape, level=1)
+            pprint("- y_std:", y_std_window.shape, level=1)
+
+        return y_mean_window.ravel(), y_std_window.ravel()

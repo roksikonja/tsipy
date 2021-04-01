@@ -9,9 +9,8 @@ import tensorflow as tf
 import tsipy.correction
 import tsipy.fusion
 from tsipy.fusion.utils import (
-    build_labels,
-    build_output_labels,
-    concatenate_labels,
+    build_and_concat_label_mask,
+    build_and_concat_label_mask_output,
 )
 from tsipy.utils import pprint, pprint_block, sort_inputs
 from tsipy_utils.data import (
@@ -185,29 +184,24 @@ if __name__ == "__main__":
     pprint_block("Data Fusion", level=1)
     gpf.config.set_default_float(np.float64)
 
-    labels, t_labels = build_labels([t_a_nn, t_b_nn])
-    s = np.reshape(np.hstack((a_c_nn, b_c_nn)), newshape=(-1, 1))
-    t = np.hstack((t_a_nn, t_b_nn))
-    t = concatenate_labels(t, t_labels)
-    t, s = sort_inputs(t, s, sort_axis=0)
-
     t_out = get_time_output([t_a_nn, t_b_nn], n_out_per_unit=365 * 24)
-    t_out_labels = build_output_labels(t_out)
-    t_out = concatenate_labels(t_out, t_out_labels)
+    t_out = build_and_concat_label_mask_output(t_out)
+
+    t_a_nn = build_and_concat_label_mask(t_a_nn, label=1)
+    t_b_nn = build_and_concat_label_mask(t_b_nn, label=2)
+
+    # Concatenate signals and sort by x[:, 0]
+    t = np.vstack((t_a_nn, t_b_nn))
+    s = np.reshape(np.hstack((a_c_nn, b_c_nn)), newshape=(-1, 1))
+    t, s = sort_inputs(t, s, sort_axis=0)
 
     pprint("Signals", level=0)
     pprint("- t", t.shape, level=1)
     pprint("- s", s.shape, level=1)
 
-    pprint("Signal", level=0)
-    pprint("- labels", labels, level=1)
-    pprint("- t_labels", t_labels.shape, level=1)
-    pprint("- t_out_labels", t_out_labels.shape, level=1)
-    pprint("- t_out", t_out.shape, level=1)
-
     # Kernel
     matern_kernel = gpf.kernels.Matern12(active_dims=[0])
-    white_kernel = tsipy.fusion.kernels.MultiWhiteKernel(labels=labels, active_dims=[1])
+    white_kernel = tsipy.fusion.kernels.MultiWhiteKernel(labels=(1, 2), active_dims=[1])
     kernel = matern_kernel + white_kernel
 
     fusion_model = tsipy.fusion.models_gp.SVGPModel(

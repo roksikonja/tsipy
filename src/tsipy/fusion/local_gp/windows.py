@@ -59,7 +59,12 @@ class Window:
             "{}, {:>8}".format(self.data_start_id, self.data_end_id),
             level=1,
         )
-        return "\n".join(["Window", pred_str, fit_str, data_str])
+        data_shape_str = pformat(
+            "- x, y:",
+            "{}, {}".format(self.x.shape, self.y.shape),
+            level=1,
+        )
+        return "\n".join(["Window", pred_str, fit_str, data_str, data_shape_str])
 
 
 class Windows:
@@ -67,11 +72,16 @@ class Windows:
         self,
         x: np.ndarray,
         y: np.ndarray,
+        pred_window_width: float,
+        fit_window_width: float,
     ) -> None:
         self._list: List[Window] = []
 
         self.x: np.ndarray = np.atleast_2d(x)
         self.y: np.ndarray = y.reshape(-1, 1)
+
+        self.pred_window_width = pred_window_width
+        self.fit_window_width = fit_window_width
 
     def __str__(self) -> str:
         strings = ["Windows:"]
@@ -233,10 +243,12 @@ def create_windows(
     if verbose:
         pprint_block("Windows Creation", level=2)
 
-    windows = Windows(x, y)
+    windows = Windows(
+        x, y, pred_window_width=pred_window_width, fit_window_width=fit_window_width
+    )
 
-    pred_windows = create_prediction_windows(windows.x, pred_window_width)
-    fit_windows = create_fit_windows(windows.x, fit_window_width, pred_windows)
+    pred_windows = create_prediction_windows(windows.x, windows.pred_window_width)
+    fit_windows = create_fit_windows(windows.x, windows.fit_window_width, pred_windows)
 
     for pred_window, fit_window in zip(pred_windows, fit_windows):
         start_id, end_id = get_window_indices(

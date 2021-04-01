@@ -3,10 +3,10 @@ import tensorflow as tf
 from gpflow.kernels import Linear
 
 from tsipy.fusion.kernels import MultiWhiteKernel
-from tsipy.fusion.utils import build_labels
+from tsipy.fusion.utils import build_and_concat_label_mask
 
 
-def test_kernel():
+def test_kernel() -> None:
     """
     Test implementation of the custom white kernel.
     """
@@ -17,19 +17,24 @@ def test_kernel():
     x_b = np.random.randint(0, 5, 2)
     x_c = np.random.randint(0, 5, 1)
 
-    x = np.hstack((x_a, x_b, x_c))
-    labels, x_labels = build_labels([x_a, x_b, x_c])
-    x = np.vstack((x, x_labels)).T
+    x_a = build_and_concat_label_mask(x_a, label=1)
+    x_b = build_and_concat_label_mask(x_b, label=2)
+    x_c = build_and_concat_label_mask(x_c, label=3)
+
+    # Concatenate signals and sort by x[:, 0]
+    x = np.vstack((x_a, x_b, x_c))
 
     x = tf.convert_to_tensor(x, dtype=tf.float64)
     x2 = x[:-1, :]
 
     # White kernel
-    noise_variances = tf.convert_to_tensor(0.1 * labels, dtype=tf.float64)
+    noise_variances = tf.convert_to_tensor(
+        0.1 * np.array([1.0, 2.0, 3.0]), dtype=tf.float64
+    )
 
     linear_kernel = Linear(active_dims=[0])
     multi_kernel = MultiWhiteKernel(
-        labels=labels, variances=noise_variances, active_dims=[1]
+        labels=(1, 2, 3), variances=noise_variances, active_dims=[1]
     )
 
     n = 3

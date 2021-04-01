@@ -8,9 +8,8 @@ import tensorflow as tf
 import tsipy.fusion
 from tsipy.correction.generator import SignalGenerator
 from tsipy.fusion.utils import (
-    build_labels,
-    build_output_labels,
-    concatenate_labels,
+    build_and_concat_label_mask,
+    build_and_concat_label_mask_output,
 )
 from tsipy.utils import pprint, pprint_block, sort_inputs
 from tsipy_utils.data import make_dir
@@ -82,32 +81,27 @@ if __name__ == "__main__":
     np.random.seed(0)
     tf.random.set_seed(0)
 
-    labels, t_labels = build_labels([t_a, t_b])
-    s = np.reshape(np.hstack((a, b)), newshape=(-1, 1))
-    t = np.hstack((t_a, t_b))
-    t = concatenate_labels(t, t_labels)
-    t, s = sort_inputs(t, s, sort_axis=0)
+    t_a = build_and_concat_label_mask(t_a, label=1)
+    t_b = build_and_concat_label_mask(t_b, label=2)
+    t_out = build_and_concat_label_mask_output(signal_generator.x)
 
-    t_out = signal_generator.x
-    t_out_labels = build_output_labels(t_out)
-    t_out = concatenate_labels(t_out, t_out_labels)
+    x_out = build_and_concat_label_mask_output(signal_generator.x)
+
+    # Concatenate signals and sort by x[:, 0]
+    t = np.vstack((t_a, t_b))
+    s = np.reshape(np.hstack((a, b)), newshape=(-1, 1))
+    t, s = sort_inputs(t, s, sort_axis=0)
 
     pprint("Signals", level=0)
     pprint("- t", t.shape, level=1)
     pprint("- s", s.shape, level=1)
-
-    pprint("Signal", level=0)
-    pprint("- labels", labels, level=1)
-    pprint("- t_labels", t_labels.shape, level=1)
-    pprint("- t_out_labels", t_out_labels.shape, level=1)
-    pprint("- t_out", t_out.shape, level=1)
 
     # Signal kernel
     matern_kernel = gpf.kernels.Matern12(active_dims=[0])  # Kernel for time dimension
 
     # Noise kernel
     white_kernel = tsipy.fusion.kernels.MultiWhiteKernel(
-        labels=labels, active_dims=[1]
+        labels=(1, 2), active_dims=[1]
     )  # Kernel for sensor dimension
 
     # Kernel composite
@@ -118,26 +112,13 @@ if __name__ == "__main__":
             kernel=kernel,
             num_inducing_pts=args.num_inducing_pts,
         )
-        local_windows = tsipy.fusion.local_gp.create_windows(
-            t,
-            s,
-            pred_window_width=args.pred_window,
-            fit_window_width=args.fit_window,
-        )
-
         fusion_model = tsipy.fusion.local_gp.LocalGPModel(
             model=local_model,
+            pred_window_width=1.0,
+            fit_window_width=1.0,
             normalization=args.normalization,
             clipping=args.clipping,
         )
-
-        # Train
-        pprint_block("Training", level=2)
-        fusion_model.fit(windows=local_windows, max_iter=args.max_iter)
-
-        # Predict
-        pprint_block("Inference", level=2)
-        s_out_mean, s_out_std = fusion_model(t_out, verbose=True)
     else:
         fusion_model = tsipy.fusion.SVGPModel(
             kernel=kernel,
@@ -146,13 +127,13 @@ if __name__ == "__main__":
             clipping=args.clipping,
         )
 
-        # Train
-        pprint_block("Training", level=2)
-        fusion_model.fit(t, s, max_iter=args.max_iter, x_val=t_out, n_evals=5)
+    # Train
+    pprint_block("Training", level=2)
+    fusion_model.fit(t, s, max_iter=args.max_iter, x_val=t_out, n_evals=5)
 
-        # Predict
-        pprint_block("Inference", level=2)
-        s_out_mean, s_out_std = fusion_model(t_out)
+    # Predict
+    pprint_block("Inference", level=2)
+    s_out_mean, s_out_std = fusion_model(t_out)
 
     pprint_block("Results")
     t_out = t_out[:, 0]

@@ -10,11 +10,9 @@ import scipy.signal
 import tensorflow as tf
 
 import tsipy.fusion
-import tsipy.fusion
 from tsipy.fusion.utils import (
-    build_labels,
-    build_output_labels,
-    concatenate_labels,
+    build_and_concat_label_mask,
+    build_and_concat_label_mask_output,
 )
 from tsipy.utils import pprint, pprint_block, sort_inputs
 from tsipy_utils.data import transform_time_to_unit, make_dir
@@ -153,29 +151,25 @@ if __name__ == "__main__":
     np.random.seed(0)
     tf.random.set_seed(0)
 
-    labels, t_labels = build_labels([t_a, t_b, t_c])
-    s = np.reshape(np.hstack((a, b, c)), newshape=(-1, 1))
-    t = np.hstack((t_a, t_b, t_c))
-    t = concatenate_labels(t, t_labels)
-    t, s = sort_inputs(t, s, sort_axis=0)
+    t_a = build_and_concat_label_mask(t_a, label=1)
+    t_b = build_and_concat_label_mask(t_b, label=2)
+    t_c = build_and_concat_label_mask(t_c, label=3)
+    t_out = build_and_concat_label_mask_output(t_a)
 
-    t_out = t
-    t_out_labels = build_output_labels(t_out)
-    t_out = concatenate_labels(t_out, t_out_labels)
+    # Concatenate signals and sort by x[:, 0]
+    t = np.vstack((t_a, t_b, t_c))
+    s = np.reshape(np.hstack((a, b, c)), newshape=(-1, 1))
+    t, s = sort_inputs(t, s, sort_axis=0)
 
     pprint("Signals", level=0)
     pprint("- t", t.shape, level=1)
     pprint("- s", s.shape, level=1)
 
-    pprint("Signal", level=0)
-    pprint("- labels", labels, level=1)
-    pprint("- t_labels", t_labels.shape, level=1)
-    pprint("- t_out_labels", t_out_labels.shape, level=1)
-    pprint("- t_out", t_out.shape, level=1)
-
     # Kernel
     matern_kernel = gpf.kernels.Matern12(active_dims=[0])
-    white_kernel = tsipy.fusion.kernels.MultiWhiteKernel(labels=labels, active_dims=[1])
+    white_kernel = tsipy.fusion.kernels.MultiWhiteKernel(
+        labels=(1, 2, 3), active_dims=[1]
+    )
     kernel = matern_kernel + white_kernel
 
     if args.fusion_model == "localgp":
@@ -183,65 +177,54 @@ if __name__ == "__main__":
             kernel=kernel,
             num_inducing_pts=args.num_inducing_pts,
         )
-
-        local_windows = tsipy.fusion.local_gp.create_windows(
-            t,
-            s,
-            pred_window_width=args.pred_window,
-            fit_window_width=args.fit_window,
-            verbose=True,
-        )
-
-        fusion_model = tsipy.fusion.LocalGPModel(
+        fusion_model = tsipy.fusion.local_gp.LocalGPModel(
             model=local_model,
+            pred_window_width=1.0,
+            fit_window_width=1.0,
+            normalization=args.normalization,
+            clipping=args.clipping,
+        )
+    else:
+        fusion_model = tsipy.fusion.SVGPModel(
+            kernel=kernel,
+            num_inducing_pts=args.num_inducing_pts,
             normalization=args.normalization,
             clipping=args.clipping,
         )
 
-        # Train
-        fusion_model.fit(windows=local_windows, max_iter=args.max_iter, verbose=True)
+    # Train
+    pprint_block("Training", level=2)
+    fusion_model.fit(t, s, max_iter=args.max_iter, x_val=t_out, n_evals=5)
 
-        # Predict
-        pprint_block("Inference", level=2)
-        s_out_mean, s_out_std = fusion_model(t_out, verbose=True)
-    else:
-        fusion_model = tsipy.fusion.SVGPModel(
-            kernel=kernel, num_inducing_pts=args.num_inducing_pts
-        )
+    # Predict
+    pprint_block("Inference", level=2)
+    s_out_mean, s_out_std = fusion_model(t_out)
 
-        # Train
-        fusion_model.fit(t, s, max_iter=args.max_iter)
-
-        # Predict
-        pprint_block("Inference", level=2)
-        s_out_mean, s_out_std = fusion_model(t_out)
-
-    t_out = t_out[:, 0]
-
+    pprint_block("Results")
     pprint("t_out", t_out.shape)
     pprint("s_out_mean", s_out_mean.shape)
     pprint("s_out_std", s_out_std.shape)
 
     fig, ax = plot_signals_and_confidence(
-        [(t_out, s_out_mean, s_out_std, "SVGP")],
+        [(t_out[:, 0], s_out_mean, s_out_std, "SVGP")],
         results_dir=results_dir,
         title="signals_fused",
         x_ticker=1,
     )
     ax.scatter(
-        t_a,
+        t_a[:, 0],
         a,
         label=r"$a$",
         s=3,
     )
     ax.scatter(
-        t_b,
+        t_b[:, 0],
         b,
         label=r"$b$",
         s=3,
     )
     ax.scatter(
-        t_c,
+        t_c[:, 0],
         c,
         label=r"$c$",
         s=3,
@@ -291,7 +274,7 @@ if __name__ == "__main__":
     data_results = pd.DataFrame(
         {
             "t" + "_org": t_org,
-            "t": t_out,
+            "t": t_out[:, 0],
             "s_out_mean": s_out_mean,
             "s_out_std": s_out_std,
         }

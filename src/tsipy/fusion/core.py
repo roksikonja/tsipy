@@ -139,12 +139,9 @@ class NormalizeAndClip:
         self._assert_2d(x)
         self._assert_2d(y)
 
-        self.compute_normalization_values(x, y)
-
         x = self.normalize_x(x)
         y = self.normalize_y(y)
         x, y = self.clip_by_y_values(x, y)
-
         return x, y
 
     def clip_by_y_values(

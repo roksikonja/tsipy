@@ -14,6 +14,8 @@ def test_normalize_and_clip():
 
     x = np.reshape(np.array([0.0, 1.0, 2.0]), newshape=(-1, 1))
     y = np.reshape(np.array([0.0, 1.0, 2.0]), newshape=(-1, 1))
+
+    nc.compute_normalization_values(x, y)
     nc.normalize_and_clip(x, y)
 
     assert nc.x_shift is not None and nc.x_shift == 0.0
@@ -36,7 +38,7 @@ def test_normalize_and_clip():
     )
 
     try:
-        nc.normalize_and_clip(x, y)
+        nc.compute_normalization_values(x, y)
         assert False, "Attempted to re-compute normalization values."
     except ValueError:
         assert True

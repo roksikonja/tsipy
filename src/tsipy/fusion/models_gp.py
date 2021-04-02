@@ -108,6 +108,7 @@ class SVGPModel(FusionModel):
         assert len(y.shape) == 2, "Input y with shape {} is not 2D.".format(y.shape)
 
         # Preprocess input data
+        self._nc.compute_normalization_values(x, y)
         x, y = self._nc.normalize_and_clip(x, y)
 
         # TF Dataset

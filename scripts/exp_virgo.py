@@ -5,7 +5,6 @@ import gpflow as gpf
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-
 import tsipy.correction
 import tsipy.fusion
 from tsipy.fusion.utils import (
@@ -14,14 +13,14 @@ from tsipy.fusion.utils import (
 )
 from tsipy.utils import pprint, pprint_block, sort_inputs
 from tsipy_utils.data import (
-    make_dir,
-    get_time_output,
     downsampling_indices_by_max_points,
+    get_time_output,
+    make_dir,
 )
 from tsipy_utils.visualizer import (
     plot_signals,
-    plot_signals_history,
     plot_signals_and_confidence,
+    plot_signals_history,
 )
 
 
@@ -184,7 +183,7 @@ if __name__ == "__main__":
     pprint_block("Data Fusion", level=1)
     gpf.config.set_default_float(np.float64)
 
-    t_out = get_time_output([t_a_nn, t_b_nn], n_out_per_unit=365 * 24)
+    t_out = get_time_output([t_a_nn, t_b_nn], n_per_unit=365 * 24)
     t_out = build_and_concat_label_mask_output(t_out)
 
     t_a_nn = build_and_concat_label_mask(t_a_nn, label=1)
@@ -249,7 +248,7 @@ if __name__ == "__main__":
 
     elbo = fusion_model.iter_elbo
     fig, ax = plot_signals(
-        [(np.arange(elbo.size), elbo, r"ELBO", {})],
+        [(np.arange(elbo.size), elbo, r"ELBO", {})],  # type: ignore
         results_dir=results_dir,
         title="iter_elbo",
         legend="lower right",

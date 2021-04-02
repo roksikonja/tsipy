@@ -30,9 +30,6 @@ Demos can be found in ```./scripts```.
 
     python ./scripts/demo_generator.py
 
-    # or run batch file
-    ./scripts/run.bat
-
 ## Cite
 
     @misc{kolar2020iterative,
@@ -43,12 +40,3 @@ Demos can be found in ```./scripts```.
           archivePrefix={arXiv},
           primaryClass={cs.LG}
     }
-
-## CI/CD
-
-    pytest tests
-    mypy .\src
-    
-    # docs
-    cd docs
-    .\make.bat html -b spelling

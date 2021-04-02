@@ -1,5 +1,4 @@
 import numpy as np
-
 from tsipy.fusion.local_gp import Windows
 
 

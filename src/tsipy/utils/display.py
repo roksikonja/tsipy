@@ -15,6 +15,7 @@ terminal_end_token: str = "\033[0m"
 
 
 def cformat(string: str, color: str = None) -> str:
+    """Colors the input string."""
     if color is not None and color in terminal_color_tokens:
         start_token = terminal_color_tokens[color]
         end_token = terminal_end_token
@@ -23,7 +24,13 @@ def cformat(string: str, color: str = None) -> str:
     return string
 
 
-def pformat(*args, shift: int = 50, level: int = 0, color: str = None) -> str:
+def pformat(*args: object, shift: int = 50, level: int = 0, color: str = None) -> str:
+    """Pretty string formatting utility function into two columns.
+
+    It formats arguments passed in two columns:
+        - keyword (left aligned),
+        - values (right aligned and separated by spaces).
+    """
     if level > 0:
         format_str = " " * (4 * level) + "{:<" + str(shift - 4 * level) + "}"
     else:
@@ -38,11 +45,18 @@ def pformat(*args, shift: int = 50, level: int = 0, color: str = None) -> str:
     return format_str.format(*args)
 
 
-def pprint(*args, shift: int = 50, level: int = 0, color: str = None) -> None:
+def pprint(*args: object, shift: int = 50, level: int = 0, color: str = None) -> None:
+    """Pretty print utility function of arguments into two columns.
+
+    Formatting is described :func:`pformat`.
+    """
     print(pformat(*args, shift=shift, level=level, color=color))
 
 
-def pprint_block(*args, width: int = None, level: int = 0, color: str = None) -> None:
+def pprint_block(
+    *args: object, width: int = None, level: int = 0, color: str = None
+) -> None:
+    """Pretty print utility function for code sections."""
     if level == 0:
         width = width if width is not None else 100
         block_str = "\n".join(["-" * width, pformat(*args), "-" * width])

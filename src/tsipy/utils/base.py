@@ -91,7 +91,11 @@ def find_nearest_indices(
 
 
 def nonclipped_indices(x: np.ndarray, n_scale: float = 5.0) -> np.ndarray:
-    """Return non-clipped indices, such that x or x_mean + n_std * x_std >= x >= x_mean - n_std * x_std. """
+    """Return non-clipped indices that are close to array mean.
+
+    Non-clipped index i satisfies:
+        x_mean + n_std * x_std >= x[i] >= x_mean - n_std * x_std.
+    """
     clip_mean, clip_std = np.mean(x), np.std(x)
 
     lower_ids = np.greater_equal(x, clip_mean - n_scale * clip_std)

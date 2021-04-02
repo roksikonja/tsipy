@@ -1,6 +1,5 @@
-from . import kernels
-from . import local_gp
-from . import models_gp
-from . import utils
+from . import kernels, utils
 from .local_gp import LocalGPModel
 from .models_gp import SVGPModel
+
+__all__ = ["kernels", "utils", "LocalGPModel", "SVGPModel"]

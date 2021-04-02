@@ -1,6 +1,5 @@
 import os
-from typing import List, Dict, Optional
-from typing import Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -31,8 +30,8 @@ class Visualizer:
         title_font_size: int = 16,
         legend_font_size: int = 16,
         marker_type: str = "x",
-        out_format="pdf",
-    ):
+        out_format: str = "pdf",
+    ) -> None:
         style.use(style_name)
 
         rc_params = {
@@ -62,7 +61,7 @@ class Visualizer:
 
 def configure_plot(
     ax: Axes,
-    x_ticker=None,
+    x_ticker: int = None,
     legend: str = None,
     y_lim: float = None,
     x_label: str = None,
@@ -101,7 +100,7 @@ def plot_signals(
     title: Optional[str] = None,
     tight_layout: bool = True,
     show: bool = False,
-    **kwargs,
+    **kwargs: Any,
 ) -> Tuple[Figure, Axes]:
     """Helper function for plotting signals."""
     fig, ax = plt.subplots()
@@ -144,7 +143,7 @@ def plot_signals_and_confidence(
     alpha: float = 0.5,
     tight_layout: bool = False,
     show: bool = False,
-    **kwargs,
+    **kwargs: Any,
 ) -> Tuple[Figure, Axes]:
     """Helper function for plotting signal mean and confidence interval."""
     factor = norm.ppf(1 / 2 + confidence / 2)  # 0.95 % -> 1.959963984540054
@@ -189,7 +188,7 @@ def plot_signals_history(
     fig_size: Tuple[int, int] = (12, 6),
     tight_layout: bool = False,
     show: bool = False,
-    **kwargs,
+    **kwargs: Any,
 ) -> Tuple[Figure, Axes]:
     """Helper function for plotting degradation correction history."""
     fig, axs = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=fig_size)

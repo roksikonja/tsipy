@@ -1,7 +1,6 @@
 from typing import Tuple
 
 import numpy as np
-
 from tsipy.correction import SignalGenerator
 from tsipy.fusion.utils import (
     build_and_concat_label_mask,

@@ -1,11 +1,11 @@
 import copy
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 import numpy as np
 
-from .windows import Windows, create_windows
-from ..core import FusionModel, NormalizeAndClip
 from ...utils import pprint
+from ..core import FusionModel, NormalizeAndClip
+from .windows import Windows, create_windows
 
 
 class LocalGPModel(FusionModel):
@@ -161,13 +161,24 @@ class LocalGPModel(FusionModel):
         self,
         windows: Windows,
         n_prints: int = 5,
+        batch_size: int = 200,
+        max_iter: int = 10000,
+        learning_rate: float = 0.005,
+        n_evals: int = 5,
         random_seed: Optional[int] = None,
         verbose: bool = False,
-        **kwargs
     ) -> None:
         self._windows = windows
         self._build()
-        self._fit(n_prints=n_prints, verbose=verbose, **kwargs)
+        self._fit(
+            batch_size=batch_size,
+            max_iter=max_iter,
+            learning_rate=learning_rate,
+            n_prints=n_prints,
+            n_evals=n_evals,
+            random_seed=random_seed,
+            verbose=verbose,
+        )
 
     def predict_window(
         self, x: np.ndarray, window_id: int, verbose: bool = False

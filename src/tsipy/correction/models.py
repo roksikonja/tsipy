@@ -88,7 +88,7 @@ class ExpFamilyMixin:
 
 
 class ExpModel(DegradationModel, ExpFamilyMixin):
-    def __init__(self):
+    def __init__(self) -> None:
         self.name = "Exp"
         self.convex = None
 
@@ -115,7 +115,7 @@ class ExpModel(DegradationModel, ExpFamilyMixin):
 
 
 class ExpLinModel(DegradationModel, ExpFamilyMixin):
-    def __init__(self):
+    def __init__(self) -> None:
         self.name = "ExpLin"
         self.convex = None
 
@@ -154,7 +154,7 @@ class MRModel(DegradationModel):
         y_min: float = 0.0,
         increasing: bool = False,
         out_of_bounds: str = "clip",
-    ):
+    ) -> None:
         self.name = "MR"
         self.convex = None
 
@@ -188,7 +188,7 @@ class SmoothMRModel(DegradationModel):
         number_of_points: int = 999,
         lam: float = 1.0,
         convex: bool = False,
-    ):
+    ) -> None:
         self.name = "SmoothMR"
         self.convex = convex
 

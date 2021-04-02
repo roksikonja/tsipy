@@ -8,15 +8,14 @@ import numpy as np
 import pandas as pd
 import scipy.signal
 import tensorflow as tf
-
 import tsipy.fusion
 from tsipy.fusion.utils import (
     build_and_concat_label_mask,
     build_and_concat_label_mask_output,
 )
 from tsipy.utils import pprint, pprint_block, sort_inputs
-from tsipy_utils.data import transform_time_to_unit, make_dir
-from tsipy_utils.visualizer import plot_signals_and_confidence, plot_signals
+from tsipy_utils.data import make_dir, transform_time_to_unit
+from tsipy_utils.visualizer import plot_signals, plot_signals_and_confidence
 
 
 def parse_arguments():
@@ -185,7 +184,7 @@ if __name__ == "__main__":
             clipping=args.clipping,
         )
     else:
-        fusion_model = tsipy.fusion.SVGPModel(
+        fusion_model = tsipy.fusion.SVGPModel(  # type: ignore
             kernel=kernel,
             num_inducing_pts=args.num_inducing_pts,
             normalization=args.normalization,
@@ -262,7 +261,7 @@ if __name__ == "__main__":
                 show=args.figure_show,
             )
     else:
-        elbo = fusion_model.iter_elbo
+        elbo = fusion_model.iter_elbo  # type: ignore
         plot_signals(
             [(np.arange(elbo.size), elbo, r"ELBO", {})],
             results_dir=results_dir,

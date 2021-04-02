@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 import numpy as np
 import tensorflow as tf
 
-from ..utils import nonclipped_indices, normalize, denormalize
+from ..utils import denormalize, nonclipped_indices, normalize
 
 
 class FusionModel(ABC):
@@ -13,7 +13,20 @@ class FusionModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def fit(self, x: np.ndarray, y: np.ndarray, **kwargs) -> None:
+    def fit(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        x_inducing: Optional[np.ndarray] = None,
+        batch_size: int = 200,
+        max_iter: int = 10000,
+        learning_rate: float = 0.005,
+        n_prints: int = 5,
+        x_val: Optional[np.ndarray] = None,
+        n_evals: int = 5,
+        random_seed: Optional[int] = None,
+        verbose: bool = False,
+    ) -> None:
         raise NotImplementedError
 
     @abstractmethod
@@ -45,27 +58,27 @@ class NormalizeAndClip:
         self._y_scale: Optional[float] = None
 
     @property
-    def x_shift(self):
+    def x_shift(self) -> float:
         assert self._x_shift is not None, "Normalization values not computed."
         return self._x_shift
 
     @property
-    def x_scale(self):
+    def x_scale(self) -> float:
         assert self._x_scale is not None, "Normalization values not computed."
         return self._x_scale
 
     @property
-    def y_shift(self):
+    def y_shift(self) -> float:
         assert self._y_shift is not None, "Normalization values not computed."
         return self._y_shift
 
     @property
-    def y_scale(self):
+    def y_scale(self) -> float:
         assert self._y_scale is not None, "Normalization values not computed."
         return self._y_scale
 
     @property
-    def initialized(self):
+    def initialized(self) -> bool:
         return (
             self._x_shift is not None
             or self._x_scale is not None
@@ -78,7 +91,7 @@ class NormalizeAndClip:
         x: np.ndarray,
         x_shift: Optional[float] = None,
         x_scale: Optional[float] = None,
-    ):
+    ) -> np.ndarray:
         self._assert_2d(x)
 
         x = np.copy(x)  # Prevent inplace modification
@@ -93,7 +106,7 @@ class NormalizeAndClip:
         y: np.ndarray,
         y_shift: Optional[float] = None,
         y_scale: Optional[float] = None,
-    ):
+    ) -> np.ndarray:
         self._assert_2d(y)
 
         y = np.copy(y)  # Prevent inplace modification
@@ -108,7 +121,7 @@ class NormalizeAndClip:
         x: np.ndarray,
         x_shift: Optional[float] = None,
         x_scale: Optional[float] = None,
-    ):
+    ) -> np.ndarray:
         self._assert_2d(x)
 
         x = np.copy(x)  # Prevent inplace modification
@@ -123,7 +136,7 @@ class NormalizeAndClip:
         y: np.ndarray,
         y_shift: Optional[float] = None,
         y_scale: Optional[float] = None,
-    ):
+    ) -> np.ndarray:
         self._assert_2d(y)
 
         y = np.copy(y)  # Prevent inplace modification
@@ -177,7 +190,7 @@ class NormalizeAndClip:
             self._y_shift = 0.0
             self._y_scale = 1.0
 
-    def reset(self):
+    def reset(self) -> None:
         self._x_shift = None
         self._x_scale = None
         self._y_shift = None

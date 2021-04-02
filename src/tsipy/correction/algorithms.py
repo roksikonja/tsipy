@@ -19,7 +19,8 @@ def correct_degradation(
     model: DegradationModel,
     method: str = "correct_one",
     verbose: bool = False,
-    **kwargs,
+    eps: float = 1e-6,
+    max_iter: int = 100,
 ) -> Tuple[
     np.ndarray,
     np.ndarray,
@@ -30,13 +31,30 @@ def correct_degradation(
 
     This is a wrapper function for :func:`correct_one` and :func:`correct_both`.
     """
+    # pylint: disable=R0913
     if method == "correct_one":
         a_m_c, b_m_c, model, history = correct_one(
-            t_m, a_m, e_a_m, b_m, e_b_m, model, verbose, **kwargs
+            t_m,
+            a_m,
+            e_a_m,
+            b_m,
+            e_b_m,
+            model,
+            verbose,
+            eps=eps,
+            max_iter=max_iter,
         )
     elif method == "correct_both":
         a_m_c, b_m_c, model, history = correct_both(
-            t_m, a_m, e_a_m, b_m, e_b_m, model, verbose, **kwargs
+            t_m,
+            a_m,
+            e_a_m,
+            b_m,
+            e_b_m,
+            model,
+            verbose,
+            eps=eps,
+            max_iter=max_iter,
         )
     else:
         raise ValueError("Invalid correction method.")
@@ -62,12 +80,16 @@ def correct_one(
 ]:
     """Executes degradation correction algorithm ``CorrectOne``.
 
-    The algorithm is described in `Kolar, Šikonja and Treven, 2020 <https://arxiv.org/abs/2009.03091>`_.
-    It is shown that corrected signals converge to the ground truth in the absence of measurement noise.
+    The algorithm is described in
+    `Kolar, Šikonja and Treven, 2020 <https://arxiv.org/abs/2009.03091>`_.
+    It is shown that corrected signals converge to the ground truth in the absence of
+    measurement noise.
 
     Returns:
-        Corrected signals ``a`` and ``b``, degradation model ``d_c(.)`` and correction history.
+        Corrected signals ``a`` and ``b``, degradation model ``d_c(.)`` and correction
+        history.
     """
+    # pylint: disable=R0913, R0914
     del t_m
 
     ratio_m = np.divide(a_m, b_m + 1e-9)
@@ -123,12 +145,16 @@ def correct_both(
 ]:
     """Executes degradation correction algorithm ``CorrectBoth``.
 
-    The algorithm is described in `Kolar, Šikonja and Treven, 2020 <https://arxiv.org/abs/2009.03091>`_.
-    It is shown that corrected signals converge to the ground truth in the absence of measurement noise.
+    The algorithm is described in
+    `Kolar, Šikonja and Treven, 2020 <https://arxiv.org/abs/2009.03091>`_.
+    It is shown that corrected signals converge to the ground truth in the absence of
+    measurement noise.
 
     Returns:
-        Corrected signals ``a`` and ``b``, degradation model ``d_c(.)`` and correction history.
+        Corrected signals ``a`` and ``b``, degradation model ``d_c(.)`` and correction
+        history.
     """
+    # pylint: disable=R0913, R0914
     del t_m
 
     ratio_m = np.divide(a_m, b_m + 1e-9)
@@ -175,9 +201,14 @@ def correct_both(
 
 
 def check_convergence(
-    a: np.ndarray, b: np.ndarray, ref_a: np.ndarray, ref_b: np.ndarray, eps=1e-6
+    a: np.ndarray,
+    b: np.ndarray,
+    ref_a: np.ndarray,
+    ref_b: np.ndarray,
+    eps: float = 1e-6,
 ) -> bool:
-    """Computes relative difference between iterations ``i`` and ``i + 1`` and checks convergence."""
+    """Computes relative difference between consecutive steps and checks convergence."""
+    # pylint: disable=C0103
     delta_norm_a = np.linalg.norm(a - ref_a) / np.linalg.norm(ref_a)
     delta_norm_b = np.linalg.norm(b - ref_b) / np.linalg.norm(ref_b)
 

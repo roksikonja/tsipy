@@ -1,6 +1,5 @@
 import numpy as np
 
-
 __all__ = [
     "build_and_concat_label_mask",
     "build_and_concat_label_mask_output",

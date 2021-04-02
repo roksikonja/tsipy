@@ -1,10 +1,9 @@
 import gpflow as gpf
 import numpy as np
-
 import tsipy.fusion
 from tests.utils import check_array_approximate
 from tests.utils_fusion import load_data_with_labels
-from tsipy.utils import pprint_block, pprint
+from tsipy.utils import pprint, pprint_block
 from tsipy_utils.visualizer import plot_signals, plot_signals_and_confidence
 
 

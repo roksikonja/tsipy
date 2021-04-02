@@ -2,7 +2,6 @@ import argparse
 import os
 
 import numpy as np
-
 import tsipy.correction
 from tsipy.utils import pprint, pprint_block
 from tsipy_utils.data import make_dir

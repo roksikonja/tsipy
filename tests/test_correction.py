@@ -1,5 +1,4 @@
 import numpy as np
-
 import tsipy.correction
 from tests.utils import check_array_approximate
 

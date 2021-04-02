@@ -13,11 +13,11 @@ def compute_exposure(
     """Computes exposure of a given signal.
 
     In literature, exposure is found under an alias exposure time.
-    If ``num_measurements`` method is selected, then the exposure equals to the number of
-    measurements up to time ``t``.
-    If ``exposure_sum`` method is selected, then the exposure equals to the cumulative sum of
-    measurement values up to time ``t``. Works only for measurements with positive values.
-    ``x_mean`` normalizes values before cumulative sum.
+    If ``num_measurements`` method is selected, then the exposure equals to the number
+    of measurements up to time ``t``.
+    If ``exposure_sum`` method is selected, then the exposure equals to the cumulative
+    sum of measurement values up to time ``t``. Works only for measurements with
+    positive values. ``x_mean`` normalizes values before cumulative sum.
 
     Examples:
         >>> import numpy as np

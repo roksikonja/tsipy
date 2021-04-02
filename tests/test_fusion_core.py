@@ -1,5 +1,4 @@
 import numpy as np
-
 from tsipy.fusion.core import NormalizeAndClip
 
 

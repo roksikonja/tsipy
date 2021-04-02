@@ -9,9 +9,6 @@ setup(
     py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
     python_requires=">=3.6, <3.8",
     install_requires=[
-        "sphinx",
-        "pytest",
-        "mypy",
         "numpy",
         "pandas",
         "matplotlib",

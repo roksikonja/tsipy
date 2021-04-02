@@ -1,9 +1,8 @@
 from typing import Dict, List, Tuple
 
 import numpy as np
-
 import tsipy.fusion
-from tests.utils import check_window_ranges, check_array_equal
+from tests.utils import check_array_equal, check_window_ranges
 from tests.utils_fusion import load_data_with_labels
 from tsipy.fusion.local_gp import create_windows
 from tsipy.utils import pprint_block

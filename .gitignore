@@ -19,3 +19,6 @@ __pypackages__/
 venv/
 
 docs/_build/
+
+scripts/run.bat
+precommit.cmd

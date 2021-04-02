@@ -89,18 +89,18 @@ def transform_time_to_unit(
 
 def get_time_output(
     t_nns: List[np.ndarray],
-    n_out_per_unit: int,
+    n_per_unit: int,
     min_time: Union[np.ndarray, float] = None,
     max_time: Union[np.ndarray, float] = None,
 ) -> np.ndarray:
-    """Returns an array between min and max inputs with `n_out_per_unit` elements per unit."""
+    """Creates a time array with n_per_unit` elements per unit."""
     if min_time is None:
         min_time = np.max([np.min(t_nn) for t_nn in t_nns])
 
     if max_time is None:
         max_time = np.min([np.max(t_nn) for t_nn in t_nns])
 
-    n_out = int(n_out_per_unit * (max_time - min_time) + 1)
+    n_out = int(n_per_unit * (max_time - min_time) + 1)
 
     t_out = np.linspace(min_time, max_time, n_out)
     return t_out

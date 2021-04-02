@@ -1,15 +1,9 @@
-from typing import List, Iterator, Optional, Tuple
+from typing import Iterator, List, Optional, Tuple
 
 import numpy as np
 
+from ...utils import get_window_indices, is_sorted, pformat, pprint, pprint_block
 from ..core import FusionModel
-from ...utils import (
-    is_sorted,
-    get_window_indices,
-    pformat,
-    pprint,
-    pprint_block,
-)
 
 
 class Window:
@@ -158,10 +152,11 @@ class Windows:
 def create_prediction_windows(
     x: np.ndarray, pred_window_width: float, verbose: bool = False
 ) -> List[Tuple[float, float, float]]:
-    """
-    Returns: A list of (x_start, x_end, x_mid) triplets corresponding to the prediction window bounds and
-        window center.
+    """Computes bounds of prediction windows.
 
+    Returns:
+        A list of (x_start, x_end, x_mid) triplets corresponding to the prediction
+        window bounds and window center.
     """
     x_min, x_max = x[:, 0].min(), x[:, 0].max()
 

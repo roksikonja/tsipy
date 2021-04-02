@@ -1,15 +1,12 @@
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
 
 import gpflow as gpf
 import numpy as np
 import tensorflow as tf
-from gpflow.utilities.utilities import tabulate_module_summary, default_summary_fmt
+from gpflow.utilities.utilities import default_summary_fmt, tabulate_module_summary
 
-from ..fusion.core import NormalizeAndClip, FusionModel
-from ..utils import (
-    find_nearest_indices,
-    pprint,
-)
+from ..fusion.core import FusionModel, NormalizeAndClip
+from ..utils import find_nearest_indices, pprint
 
 
 class SVGPModel(FusionModel):
@@ -148,9 +145,13 @@ class SVGPModel(FusionModel):
         training_loss = self._model.training_loss_closure(train_iter, compile=True)
         optimizer = tf.optimizers.Adam(learning_rate=learning_rate)
 
+        assert self._model is not None, "Model is not initialized."
+
         @tf.function
-        def train_step():
-            optimizer.minimize(training_loss, self._model.trainable_variables)
+        def train_step() -> None:
+            optimizer.minimize(
+                training_loss, self._model.trainable_variables  # type: ignore
+            )
 
         for i in range(max_iter):
             train_step()

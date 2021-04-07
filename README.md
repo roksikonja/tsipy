@@ -28,7 +28,8 @@ Tested with ```3.7.x```. In Python ```3.8.x``` there is a conflict between depen
 
 Demos can be found in ```./scripts```.
 
-    python ./scripts/demo_generator.py
+    python ./scripts/demo_degradation.py
+    python ./scripts/demo_fusion.py
 
 ## Cite
 

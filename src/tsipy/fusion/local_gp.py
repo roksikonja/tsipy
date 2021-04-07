@@ -3,8 +3,8 @@ from typing import Optional, Tuple
 
 import numpy as np
 
-from ...utils import pprint
-from ..core import FusionModel, NormalizeAndClip
+from tsipy.utils import pprint
+from tsipy.fusion.core import FusionModel, NormalizeAndClip
 from .windows import Windows, create_windows
 
 

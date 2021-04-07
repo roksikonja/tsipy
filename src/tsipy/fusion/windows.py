@@ -2,8 +2,8 @@ from typing import Iterator, List, Optional, Tuple
 
 import numpy as np
 
-from ...utils import get_window_indices, is_sorted, pformat, pprint, pprint_block
-from ..core import FusionModel
+from tsipy.utils import get_window_indices, is_sorted, pformat, pprint, pprint_block
+from tsipy.fusion.core import FusionModel
 
 
 class Window:

@@ -147,7 +147,7 @@ def get_window_indices(x: np.ndarray, x_start: float, x_end: float) -> Tuple[int
         x_start <= x[x_start_id:x_end_id + 1] <= x_end.
     """
     x_start_id = closest_binary_search(array=x, value=x_start)
-    # handle a range of equal values
+    # Handle a range of equal values
     if x_start_id != 0:
         while x[x_start_id - 1] == x_start:
             x_start_id -= 1
@@ -156,7 +156,7 @@ def get_window_indices(x: np.ndarray, x_start: float, x_end: float) -> Tuple[int
                 break
 
     x_end_id = closest_binary_search(array=x, value=x_end)
-    # handle a range of equal values
+    # Handle a range of equal values
     if x_end_id != (x.size - 1):
         while x[x_end_id + 1] == x_end:
             x_end_id += 1

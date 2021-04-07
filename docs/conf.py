@@ -14,14 +14,16 @@ release = "1.0.0"
 pygments_style = "sphinx"
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
-html_theme = "alabaster"
 html_static_path = ["_static"]
+html_theme = "sphinx_rtd_theme"
 
 extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
     "sphinx_autodoc_typehints",
+    "sphinx_rtd_theme",
 ]
+
 if "spelling" in sys.argv:
     extensions.append("sphinxcontrib.spelling")
 

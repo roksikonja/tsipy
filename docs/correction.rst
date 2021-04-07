@@ -1,14 +1,17 @@
 Degradation Correction
 ======================
 
+.. module:: tsipy.correction
+
+.. contents::
+
 Exposure
 --------
 
-.. automodule:: tsipy.correction.exposure
-    :members:
+.. function:: normalize_integer_triplet(rgb_triplet)
 
 Algorithms
 ----------
 
-.. automodule:: tsipy.correction.algorithms
-    :members:
+Degradation Models
+------------------

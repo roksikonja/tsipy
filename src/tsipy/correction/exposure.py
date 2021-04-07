@@ -30,12 +30,10 @@ def compute_exposure(
     if method == "num_measurements":
         x = ~np.isnan(x)
         x = x.astype(np.float)
-        x = np.cumsum(x)
+        return np.cumsum(x)
     elif method == "exposure_sum":
         x = np.nan_to_num(x, nan=0.0, copy=True)  # NaNs to 0
         x = np.divide(x, x_mean, dtype=np.float)
-        x = np.cumsum(x)
+        return np.cumsum(x)
     else:
         raise ValueError("Invalid exposure method.")
-
-    return x

@@ -5,14 +5,23 @@ tsipy is a library for processing Total Solar Irradiance signals, however its
 functionality may be applied to a wide variety of signals and time series.
 tsipy is
 
-.. toctree::
-   :caption: Guides
-   :maxdepth: 1
+Getting Started
+---------------
 
-   Getting Started <getting_started.rst>
-   Degradation Correction <correction.rst>
-   Sensor Fusion <fusion.rst>
-   References <references.rst>
+.. toctree::
+    :caption: Tutorial
+    :maxdepth: 1
+
+    Degradation Correction <notebooks/demo_degradation.ipynb>
+    Sensor Fusion <notebooks/demo_fusion.ipynb>
+
+
+.. toctree::
+    :caption: Guides
+    :maxdepth: 1
+
+    Degradation Correction <correction.rst>
+    Sensor Fusion <fusion.rst>
 
 .. toctree::
    :caption: Package Reference

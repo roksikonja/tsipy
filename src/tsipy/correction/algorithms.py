@@ -2,13 +2,16 @@
 This module implements algorithms that perform degradation correction.
 """
 
-from typing import List, Tuple
 from collections import namedtuple
+from typing import List, Tuple
 
 import numpy as np
 
 from .models import DegradationModel
 from ..utils import pprint
+
+__all__ = ["History", "correct_degradation", "correct_one", "correct_both"]
+
 
 History = namedtuple("History", ["iteration", "a", "b", "ratio"])
 
@@ -73,8 +76,8 @@ def correct_one(
 ) -> Tuple[np.ndarray, np.ndarray, DegradationModel, List[History]]:
     """Executes degradation correction algorithm ``CorrectOne``.
 
-    The algorithm is described in
-    `Kolar, Šikonja and Treven, 2020 <https://arxiv.org/abs/2009.03091>`_.
+    The algorithm is described in :cite:t:`kolar2020iterative`.
+
     It is shown that corrected signals converge to the ground truth in the absence of
     measurement noise.
 
@@ -83,26 +86,23 @@ def correct_one(
         history.
     """
     # pylint: disable=R0913, R0914
-    del t_m
+    _check_inputs(t_m, a_m, e_a_m, b_m, e_b_m)
 
     ratio_m = np.divide(a_m, b_m + 1e-9)
     correction_triplet = History(0, a_m, b_m, ratio_m)
     history = [correction_triplet]
 
     a_m_c, b_m_c = a_m, b_m
-    iteration = 1
+    iteration = 0
     for iteration in range(1, max_iter + 1):
         previous_correction_triplet = correction_triplet
 
-        model.fit(ratio_m, e_a_m)
+        model.fit(x_a=e_a_m, ratio=ratio_m)
         d_a_c, d_b_c = model(e_a_m), model(e_b_m)
 
         a_m_c = np.divide(a_m, d_a_c + 1e-9)
         b_m_c = np.divide(b_m, d_b_c + 1e-9)
         ratio_m = np.divide(a_m, b_m_c + 1e-9)
-
-        correction_triplet = (a_m_c, b_m_c, ratio_m)
-        history.append(correction_triplet)
 
         correction_triplet = History(iteration, a_m_c, b_m_c, ratio_m)
         history.append(correction_triplet)
@@ -136,8 +136,8 @@ def correct_both(
 ) -> Tuple[np.ndarray, np.ndarray, DegradationModel, List[History]]:
     """Executes degradation correction algorithm ``CorrectBoth``.
 
-    The algorithm is described in
-    `Kolar, Šikonja and Treven, 2020 <https://arxiv.org/abs/2009.03091>`_.
+    The algorithm is described in :cite:t:`kolar2020iterative`.
+
     It is shown that corrected signals converge to the ground truth in the absence of
     measurement noise.
 
@@ -146,18 +146,18 @@ def correct_both(
         history.
     """
     # pylint: disable=R0913, R0914
-    del t_m
+    _check_inputs(t_m, a_m, e_a_m, b_m, e_b_m)
 
     ratio_m = np.divide(a_m, b_m + 1e-9)
     correction_triplet = History(0, a_m, b_m, ratio_m)
     history = [correction_triplet]
 
     a_m_c, b_m_c = a_m, b_m
-    iteration = 1
+    iteration = 0
     for iteration in range(1, max_iter + 1):
         previous_correction_triplet = correction_triplet
 
-        model.fit(ratio_m, e_a_m)
+        model.fit(x_a=e_a_m, ratio=ratio_m)
         d_a_c, d_b_c = model(e_a_m), model(e_b_m)
 
         a_m_c = np.divide(a_m_c, d_a_c + 1e-9)
@@ -190,6 +190,37 @@ def correct_both(
     b_m_c = np.divide(b_m, d_b_c + 1e-9)
 
     return a_m_c, b_m_c, model, history
+
+
+def _check_inputs(
+    t_m: np.ndarray,
+    a_m: np.ndarray,
+    e_a_m: np.ndarray,
+    b_m: np.ndarray,
+    e_b_m: np.ndarray,
+) -> None:
+    """Checks that all inputs have the same shape."""
+    t_shape = t_m.shape
+    if not np.array_equal(a_m.shape, t_shape):
+        raise ValueError(
+            "a does not have the same shape as t: {} != {}".format(a_m.shape, t_shape)
+        )
+    if not np.array_equal(b_m.shape, t_shape):
+        raise ValueError(
+            "b does not have the same shape as t: {} != {}".format(b_m.shape, t_shape)
+        )
+    if not np.array_equal(e_a_m.shape, t_shape):
+        raise ValueError(
+            "e_a does not have the same shape as t: {} != {}".format(
+                e_a_m.shape, t_shape
+            )
+        )
+    if not np.array_equal(e_b_m.shape, t_shape):
+        raise ValueError(
+            "e_b does not have the same shape as t: {} != {}".format(
+                e_b_m.shape, t_shape
+            )
+        )
 
 
 def _check_convergence(

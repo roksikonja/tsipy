@@ -2,7 +2,6 @@ from . import kernels, utils
 from .local_gp import LocalGPModel
 from .models_gp import SVGPModel
 
-from .local_gp import LocalGPModel
 from .windows import (
     Window,
     Windows,
@@ -14,8 +13,8 @@ from .windows import (
 __all__ = [
     "kernels",
     "utils",
+    "SVGPModel",
     "LocalGPModel",
-    "SVGPModel" "LocalGPModel",
     "create_windows",
     "create_fit_windows",
     "create_prediction_windows",

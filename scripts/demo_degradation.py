@@ -2,7 +2,13 @@ import argparse
 import os
 
 import numpy as np
-import tsipy.correction
+
+from tsipy.correction import (
+    compute_exposure,
+    correct_degradation,
+    load_model,
+    SignalGenerator,
+)
 from tsipy.utils import pprint, pprint_block
 from tsipy_utils.data import make_dir
 from tsipy_utils.visualizer import plot_signals, plot_signals_history
@@ -26,7 +32,7 @@ if __name__ == "__main__":
     pprint_block("Experiment", args.experiment_name)
     results_dir = make_dir(os.path.join("../results", args.experiment_name))
 
-    signal_generator = tsipy.correction.SignalGenerator(
+    signal_generator = SignalGenerator(
         add_noise=False,
         downsampling_rates=(0.99, 0.2),
     )
@@ -37,8 +43,8 @@ if __name__ == "__main__":
     t = data["t"].values
 
     # Compute exposure
-    e_a = tsipy.correction.compute_exposure(a)
-    e_b = tsipy.correction.compute_exposure(b)
+    e_a = compute_exposure(a)
+    e_b = compute_exposure(b)
     e_a /= signal_generator.length
     e_b /= signal_generator.length
     data["e_a"] = e_a
@@ -81,10 +87,10 @@ if __name__ == "__main__":
     )
 
     pprint_block("Degradation Correction", level=2)
-    degradation_model = tsipy.correction.load_model(args.degradation_model)
+    degradation_model = load_model(args.degradation_model)
     degradation_model.initial_fit(a_m, b_m, e_a_m)
 
-    a_m_c, b_m_c, degradation_model, history = tsipy.correction.correct_degradation(
+    a_m_c, b_m_c, degradation_model, history = correct_degradation(
         t_m,
         a_m,
         e_a_m,
@@ -133,8 +139,8 @@ if __name__ == "__main__":
         t_m,
         [
             [
-                (signals[0], "$a_{}$".format(i)),
-                (signals[1], "$b_{}$".format(i)),
+                (signals.a, "$a_{}$".format(i)),
+                (signals.b, "$b_{}$".format(i)),
                 (
                     signal_generator.y[
                         np.logical_and(
@@ -147,7 +153,7 @@ if __name__ == "__main__":
             ]
             for i, signals in enumerate(history[:4])
         ],
-        results_dir,
+        results_dir=results_dir,
         title="correction_history",
         n_rows=2,
         n_cols=2,

@@ -6,6 +6,8 @@ Follows algorithms as described in
 [Iterative Correction of Sensor Degradation and a Bayesian Multi-Sensor Data Fusion Method](https://arxiv.org/abs/2009.03091)
 .
 
+Full documentation is available [online](https://tsipy.readthedocs.io/).
+
 ## Installation
 
 Tested with ```3.7.x```. In Python ```3.8.x``` there is a conflict between dependencies ```cvxpy``` and ```tensorflow```

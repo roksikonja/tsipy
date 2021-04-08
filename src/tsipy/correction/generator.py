@@ -8,8 +8,12 @@ import scipy.stats
 from .exposure import compute_exposure
 from .models import ExpModel
 
+__all__ = ["SignalGenerator"]
+
 
 class SignalGenerator(object):
+    """Class for generating sample signals."""
+
     def __init__(
         self,
         length: int = 100000,
@@ -20,6 +24,17 @@ class SignalGenerator(object):
         exposure_method: str = "num_measurements",
         random_seed: int = 0,
     ):
+        """One.
+
+        Args:
+            length:
+            add_degradation:
+            add_noise:
+            downsampling_rates:
+            noise_stds:
+            exposure_method:
+            random_seed:
+        """
         np.random.seed(random_seed)
         self.length = length
 
@@ -41,6 +56,7 @@ class SignalGenerator(object):
 
     @property
     def data(self) -> pd.DataFrame:
+        """Two."""
         a = self._get_signal("a")
         b = self._get_signal("b")
         data = pd.DataFrame(

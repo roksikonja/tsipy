@@ -4,6 +4,8 @@ This module implements a function for degradation correction.
 
 import numpy as np
 
+__all__ = ["compute_exposure"]
+
 
 def compute_exposure(
     x: np.ndarray,

@@ -21,7 +21,9 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
     "sphinx_autodoc_typehints",
+    "sphinxcontrib.bibtex",
     "sphinx_rtd_theme",
+    "nbsphinx",
 ]
 
 if "spelling" in sys.argv:
@@ -29,3 +31,5 @@ if "spelling" in sys.argv:
 
 spelling_lang = "en_US"
 spelling_word_list_filename = "spelling_wordlist.txt"
+
+bibtex_bibfiles = ["references.bib"]

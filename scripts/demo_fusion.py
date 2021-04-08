@@ -4,8 +4,10 @@ import os
 import gpflow as gpf
 import numpy as np
 import tensorflow as tf
-import tsipy.fusion
-from tsipy.correction.generator import SignalGenerator
+
+from tsipy.correction import SignalGenerator
+from tsipy.fusion import SVGPModel, LocalGPModel
+from tsipy.fusion.kernels import MultiWhiteKernel
 from tsipy.fusion.utils import (
     build_and_concat_label_mask,
     build_and_concat_label_mask_output,
@@ -99,7 +101,7 @@ if __name__ == "__main__":
     matern_kernel = gpf.kernels.Matern12(active_dims=[0])  # Kernel for time dimension
 
     # Noise kernel
-    white_kernel = tsipy.fusion.kernels.MultiWhiteKernel(
+    white_kernel = MultiWhiteKernel(
         labels=(1, 2), active_dims=[1]
     )  # Kernel for sensor dimension
 
@@ -107,11 +109,11 @@ if __name__ == "__main__":
     kernel = matern_kernel + white_kernel
 
     if args.fusion_model == "localgp":
-        local_model = tsipy.fusion.SVGPModel(
+        local_model = SVGPModel(
             kernel=kernel,
             num_inducing_pts=args.num_inducing_pts,
         )
-        fusion_model = tsipy.fusion.local_gp.LocalGPModel(
+        fusion_model = LocalGPModel(
             model=local_model,
             pred_window_width=1.0,
             fit_window_width=1.0,
@@ -119,7 +121,7 @@ if __name__ == "__main__":
             clipping=args.clipping,
         )
     else:
-        fusion_model = tsipy.fusion.SVGPModel(  # type: ignore
+        fusion_model = SVGPModel(  # type: ignore
             kernel=kernel,
             num_inducing_pts=args.num_inducing_pts,
             normalization=args.normalization,

@@ -1,7 +1,6 @@
 from . import kernels, utils
 from .local_gp import LocalGPModel
 from .models_gp import SVGPModel
-
 from .windows import (
     Window,
     Windows,

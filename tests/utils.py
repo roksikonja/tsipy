@@ -1,5 +1,6 @@
 import numpy as np
-from tsipy.fusion.local_gp import Windows
+
+from tsipy.fusion import Windows
 
 
 def check_window_ranges(

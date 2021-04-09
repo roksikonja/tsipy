@@ -1,3 +1,7 @@
+"""
+Plot utilities for visualizing signals, degradation history and signals with
+confidence intervals.
+"""
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -11,52 +15,50 @@ from matplotlib.figure import Figure
 from scipy.stats import norm
 
 __all__ = [
-    "Visualizer",
-    "visualizer",
     "plot_signals",
     "plot_signals_history",
     "plot_signals_and_confidence",
 ]
 
 
-class Visualizer:
-    def __init__(
-        self,
-        style_name: str = "seaborn",
-        fig_size: Tuple[int, int] = (12, 6),
-        font_size: int = 16,
-        ax_font_size: int = 18,
-        ticks_font_size: int = 16,
-        title_font_size: int = 16,
-        legend_font_size: int = 16,
-        marker_type: str = "x",
-        out_format: str = "pdf",
-    ) -> None:
-        style.use(style_name)
+def set_style(
+    style_name: str = "seaborn",
+    fig_size: Tuple[int, int] = (12, 6),
+    font_size: int = 16,
+    ax_font_size: int = 18,
+    ticks_font_size: int = 16,
+    title_font_size: int = 16,
+    legend_font_size: int = 16,
+    marker_type: str = "x",
+    out_format: str = "pdf",
+) -> None:
+    """Set default `pyplot` style."""
+    # pylint: disable=R0913
+    style.use(style_name)
 
-        rc_params = {
-            "pgf.texsystem": "pdflatex",
-            "font.family": "serif",
-            "text.usetex": True,
-            "pgf.rcfonts": False,
-            "pgf.preamble": "\n".join(
-                [
-                    "\\usepackage[utf8]{inputenc}",
-                    "\\DeclareUnicodeCharacter{2212}{-}",
-                ]
-            ),
-            "figure.figsize": fig_size,
-            "font.size": font_size,
-            "legend.fontsize": legend_font_size,
-            "legend.title_fontsize": title_font_size,
-            "axes.labelsize": ax_font_size,
-            "xtick.labelsize": ticks_font_size,
-            "ytick.labelsize": ticks_font_size,
-            "scatter.marker": marker_type,
-            "savefig.format": out_format,
-        }
+    rc_params = {
+        "pgf.texsystem": "pdflatex",
+        "font.family": "serif",
+        "text.usetex": True,
+        "pgf.rcfonts": False,
+        "pgf.preamble": "\n".join(
+            [
+                "\\usepackage[utf8]{inputenc}",
+                "\\DeclareUnicodeCharacter{2212}{-}",
+            ]
+        ),
+        "figure.figsize": fig_size,
+        "font.size": font_size,
+        "legend.fontsize": legend_font_size,
+        "legend.title_fontsize": title_font_size,
+        "axes.labelsize": ax_font_size,
+        "xtick.labelsize": ticks_font_size,
+        "ytick.labelsize": ticks_font_size,
+        "scatter.marker": marker_type,
+        "savefig.format": out_format,
+    }
 
-        mpl.rcParams.update(rc_params)
+    mpl.rcParams.update(rc_params)
 
 
 def configure_plot(
@@ -70,6 +72,7 @@ def configure_plot(
     log_scale_y: bool = False,
 ) -> None:
     """Helper function for configuring axes parameters."""
+    # pylint: disable=R0913, C0103
     if x_ticker:
         ax.xaxis.set_major_locator(ticker.MultipleLocator(x_ticker))
 
@@ -93,7 +96,7 @@ def configure_plot(
 
 
 def plot_signals(
-    signal_fiveplets: List[
+    signal_fourplets: List[
         Tuple[np.ndarray, np.ndarray, str, Dict],
     ],
     results_dir: Optional[str] = None,
@@ -103,23 +106,17 @@ def plot_signals(
     **kwargs: Any,
 ) -> Tuple[Figure, Axes]:
     """Helper function for plotting signals."""
+    # pylint: disable=C0103, R0913, R0914
     fig, ax = plt.subplots()
-    for signal_fiveplet in signal_fiveplets:
-        if not signal_fiveplet:
-            continue
-
-        t = signal_fiveplet[0]
-        x = signal_fiveplet[1]
+    for signal_fourplet in signal_fourplets:
+        x, y, label, kwargs_sig = signal_fourplet
 
         # Delete NaNs
-        index_x_nn = ~np.isnan(x)
-        t = t[index_x_nn]
-        x = x[index_x_nn]
+        index_y_nn = ~np.isnan(y)
+        x = x[index_y_nn]
+        y = y[index_y_nn]
 
-        label = signal_fiveplet[2]
-        kwargs_sig = signal_fiveplet[3]
-
-        ax.plot(t, x, label=label, **kwargs_sig)
+        ax.plot(x, y, label=label, **kwargs_sig)
 
     configure_plot(ax, **kwargs)
 
@@ -136,7 +133,7 @@ def plot_signals(
 
 
 def plot_signals_and_confidence(
-    signal_fiveplets: List[Tuple[np.ndarray, np.ndarray, np.ndarray, str]],
+    signal_fourplets: List[Tuple[np.ndarray, np.ndarray, np.ndarray, str]],
     results_dir: Optional[str] = None,
     title: Optional[str] = None,
     confidence: float = 0.95,
@@ -146,20 +143,20 @@ def plot_signals_and_confidence(
     **kwargs: Any,
 ) -> Tuple[Figure, Axes]:
     """Helper function for plotting signal mean and confidence interval."""
+    # pylint: disable=C0103, R0913, R0914
+
+    # Computes confidence interval width for Normal(0, 1)
     factor = norm.ppf(1 / 2 + confidence / 2)  # 0.95 % -> 1.959963984540054
 
     fig, ax = plt.subplots()
-    for signal_fiveplet in signal_fiveplets:
-        t = signal_fiveplet[0]
-        x_mean = signal_fiveplet[1]
-        x_std = signal_fiveplet[2]
-        label = signal_fiveplet[3]
+    for signal_fourplet in signal_fourplets:
+        x, y_mean, y_std, label = signal_fourplet
 
-        ax.plot(t, x_mean, label=label)
+        ax.plot(x, y_mean, label=label)
         ax.fill_between(
-            t,
-            x_mean - factor * x_std,
-            x_mean + factor * x_std,
+            x,
+            y_mean - factor * y_std,
+            y_mean + factor * y_std,
             alpha=alpha,
             label=None,
         )
@@ -179,7 +176,7 @@ def plot_signals_and_confidence(
 
 
 def plot_signals_history(
-    t_m: np.ndarray,
+    x: np.ndarray,
     signals_history: List[List[Tuple[np.ndarray, str]]],
     results_dir: Optional[str] = None,
     title: Optional[str] = None,
@@ -191,6 +188,7 @@ def plot_signals_history(
     **kwargs: Any,
 ) -> Tuple[Figure, Axes]:
     """Helper function for plotting degradation correction history."""
+    # pylint: disable=C0103, R0913, R0914
     fig, axs = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=fig_size)
 
     for i, signals in enumerate(signals_history):
@@ -199,11 +197,10 @@ def plot_signals_history(
 
         ax = axs[row, col]
 
-        for signal_triplet in signals:
-            x = signal_triplet[0]
-            label = signal_triplet[1]
+        for signal_pair in signals:
+            y, label = signal_pair
 
-            ax.plot(t_m, x, label=label)
+            ax.plot(x, y, label=label)
 
         configure_plot(ax, **kwargs)
 
@@ -219,4 +216,4 @@ def plot_signals_history(
     return fig, axs
 
 
-visualizer = Visualizer()
+set_style()

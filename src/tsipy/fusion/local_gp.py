@@ -3,8 +3,8 @@ from typing import Optional, Tuple
 
 import numpy as np
 
-from tsipy.utils import pprint
-from tsipy.fusion.core import FusionModel, NormalizeAndClip
+from ..utils import pprint
+from .core import FusionModel, NormalizeAndClip
 from .windows import Windows, create_windows
 
 
@@ -98,7 +98,7 @@ class LocalGPModel(FusionModel):
             y,
             pred_window_width=self.pred_window_width,
             fit_window_width=self.fit_window_width,
-            verbose=verbose,
+            verbose=False,
         )
         self._build()
         self._fit(

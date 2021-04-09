@@ -7,13 +7,21 @@ from typing import List, Tuple
 
 import numpy as np
 
-from .models import DegradationModel
 from ..utils import pprint
+from .models import DegradationModel
 
 __all__ = ["History", "correct_degradation", "correct_one", "correct_both"]
 
 
 History = namedtuple("History", ["iteration", "a", "b", "ratio"])
+History.__doc__ += (
+    "A :class:`~collections.namedtuple` representing step at a"
+    "particular step of degradation correction."
+)
+History.iteration.__doc__ = "Iteration of degradation correction algorithm."
+History.a.__doc__ = "Corrected signal ``a`` at ``iteration``."
+History.b.__doc__ = "Corrected signal ``b`` at ``iteration``."
+History.ratio.__doc__ = "Ratio between ``a`` and ˙˙b˙˙ at iteration ``iteration``."
 
 
 def correct_degradation(
@@ -183,7 +191,7 @@ def correct_both(
     # Re-fit
     # In CorrectBoth, model converges to a constant function of 1
     ratio_m = np.divide(a_m, b_m_c + 1e-9)
-    model.fit(ratio_m, e_a_m)
+    model.fit(x_a=e_a_m, ratio=ratio_m)
     d_a_c, d_b_c = model(e_a_m), model(e_b_m)
 
     a_m_c = np.divide(a_m, d_a_c + 1e-9)

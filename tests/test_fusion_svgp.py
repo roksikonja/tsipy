@@ -1,9 +1,10 @@
 import gpflow as gpf
-import tsipy.fusion
+
 from tests.utils import check_array_approximate
 from tests.utils_fusion import load_data_with_labels, load_data_without_labels
-from tsipy.utils import pprint, pprint_block
-from tsipy_utils.visualizer import plot_signals
+from tsipy.fusion import SVGPModel
+from tsipy.fusion.kernels import MultiWhiteKernel
+from tsipy.utils import plot_signals, pprint, pprint_block
 
 
 def test_svgp_convergence_with_labels(verbose: bool = True, show: bool = True) -> None:
@@ -21,7 +22,7 @@ def test_svgp_convergence_with_labels(verbose: bool = True, show: bool = True) -
     )
 
     matern_kernel = gpf.kernels.Matern12(active_dims=[0])
-    white_kernel = tsipy.fusion.kernels.MultiWhiteKernel(labels=(1, 2), active_dims=[1])
+    white_kernel = MultiWhiteKernel(labels=(1, 2), active_dims=[1])
     kernel = matern_kernel + white_kernel
 
     # SVGP
@@ -35,7 +36,7 @@ def test_svgp_convergence_with_labels(verbose: bool = True, show: bool = True) -
                     pprint("num_inducing_pts:", num_inducing_pts)
                     pprint("max_iter:", max_iter)
 
-                fusion_model = tsipy.fusion.SVGPModel(
+                fusion_model = SVGPModel(
                     kernel=kernel,
                     num_inducing_pts=num_inducing_pts,
                     normalization=normalization,
@@ -70,8 +71,9 @@ def test_svgp_convergence_without_labels(
     if verbose:
         pprint_block("Convergence of SVGP to ground truth without sensor labels")
 
+    random_seed = 1
     x_a, x_b, x, y_a, y_b, y, x_out, x_gt, y_gt = load_data_without_labels(
-        random_seed=0
+        random_seed=random_seed
     )
 
     plot_signals(
@@ -95,7 +97,7 @@ def test_svgp_convergence_without_labels(
                     pprint("num_inducing_pts:", num_inducing_pts)
                     pprint("max_iter:", max_iter)
 
-                fusion_model = tsipy.fusion.SVGPModel(
+                fusion_model = SVGPModel(
                     kernel=kernel,
                     num_inducing_pts=num_inducing_pts,
                     normalization=normalization,
@@ -103,7 +105,7 @@ def test_svgp_convergence_without_labels(
                 )
 
                 fusion_model.fit(
-                    x, y, max_iter=max_iter, random_seed=1, verbose=verbose
+                    x, y, max_iter=max_iter, random_seed=random_seed, verbose=verbose
                 )
                 y_out_mean, y_out_std = fusion_model(x_out)
 

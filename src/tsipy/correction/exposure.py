@@ -1,5 +1,5 @@
 """
-This module implements a function for degradation correction.
+Module implements a function for degradation correction.
 """
 
 import numpy as np
@@ -29,6 +29,10 @@ def compute_exposure(
         >>> compute_exposure(x, method="exposure_sum")
         array([ 1.,  1.,  4.,  8., 13.])
     """
+    # pylint: disable=C0103
+    if x.ndim != 1:
+        raise ValueError(f"x of shape {x.shape} is not 1D array.")
+
     if method == "num_measurements":
         x = ~np.isnan(x)
         x = x.astype(np.float)
@@ -37,5 +41,5 @@ def compute_exposure(
         x = np.nan_to_num(x, nan=0.0, copy=True)  # NaNs to 0
         x = np.divide(x, x_mean, dtype=np.float)
         return np.cumsum(x)
-    else:
-        raise ValueError("Invalid exposure method.")
+
+    raise ValueError("Invalid exposure method.")

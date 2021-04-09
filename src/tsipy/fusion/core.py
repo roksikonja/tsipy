@@ -6,6 +6,8 @@ import tensorflow as tf
 
 from ..utils import denormalize, nonclipped_indices, normalize
 
+__all__ = ["FusionModel", "NormalizeAndClip"]
+
 
 class FusionModel(ABC):
     @abstractmethod
@@ -27,6 +29,7 @@ class FusionModel(ABC):
         random_seed: Optional[int] = None,
         verbose: bool = False,
     ) -> None:
+        # noinspection PyPep8Naming
         raise NotImplementedError
 
     @abstractmethod
@@ -137,6 +140,7 @@ class NormalizeAndClip:
         y_shift: Optional[float] = None,
         y_scale: Optional[float] = None,
     ) -> np.ndarray:
+        """Denormalizes """
         self._assert_2d(y)
 
         y = np.copy(y)  # Prevent inplace modification
@@ -149,6 +153,7 @@ class NormalizeAndClip:
     def normalize_and_clip(
         self, x: np.ndarray, y: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
+        """Normalizes and clips inputs."""
         self._assert_2d(x)
         self._assert_2d(y)
 
@@ -160,6 +165,7 @@ class NormalizeAndClip:
     def clip_by_y_values(
         self, x: np.ndarray, y: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
+        """Discards indices where ``y`` is far from the mean."""
         self._assert_2d(x)
         self._assert_2d(y)
 
@@ -170,6 +176,7 @@ class NormalizeAndClip:
         return x, y
 
     def compute_normalization_values(self, x: np.ndarray, y: np.ndarray) -> None:
+        """Computes normalization values given ``x`` and ``y``."""
         self._assert_2d(x)
         self._assert_2d(y)
         assert (
@@ -191,6 +198,7 @@ class NormalizeAndClip:
             self._y_scale = 1.0
 
     def reset(self) -> None:
+        """Reset computed normalization values."""
         self._x_shift = None
         self._x_scale = None
         self._y_shift = None

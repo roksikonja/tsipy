@@ -2,8 +2,8 @@ from typing import Iterator, List, Optional, Tuple
 
 import numpy as np
 
-from tsipy.utils import get_window_indices, is_sorted, pformat, pprint, pprint_block
 from tsipy.fusion.core import FusionModel
+from tsipy.utils import get_window_indices, is_sorted, pformat, pprint, pprint_block
 
 
 class Window:
@@ -102,7 +102,7 @@ class Windows:
         x, y = [], []
         start_id = 0
 
-        for i, window in enumerate(self):
+        for window in self:
             start_id = max(start_id, window.data_start_id)
             end_id = window.data_end_id + 1
 
@@ -152,6 +152,7 @@ class Windows:
 def create_prediction_windows(
     x: np.ndarray, pred_window_width: float, verbose: bool = False
 ) -> List[Tuple[float, float, float]]:
+    # pylint: disable=C0103
     """Computes bounds of prediction windows.
 
     Returns:
@@ -193,10 +194,11 @@ def create_fit_windows(
     pred_windows: List[Tuple[float, float, float]],
     verbose: bool = False,
 ) -> List[Tuple[float, float]]:
+    # pylint: disable=C0103
     x_min, x_max = x[:, 0].min(), x[:, 0].max()
 
     fit_windows = []
-    for x_pred_start, x_pred_end, x_pred_mid in pred_windows:
+    for _, _, x_pred_mid in pred_windows:
         x_fit_start = max(x_min, x_pred_mid - fit_window_width / 2.0)
         x_fit_end = min(x_max, x_pred_mid + fit_window_width / 2.0)
         fit_windows.append((x_fit_start, x_fit_end))
@@ -217,6 +219,7 @@ def create_windows(
     fit_window_width: float,
     verbose: bool = False,
 ) -> Windows:
+    # pylint: disable=C0103
     assert is_sorted(x[:, 0]), "Input array x is not sorted in dimension 0."
     assert (
         pred_window_width <= fit_window_width

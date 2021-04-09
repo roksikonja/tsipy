@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from gpflow.kernels import Linear
+
 from tsipy.fusion.kernels import MultiWhiteKernel
 from tsipy.fusion.utils import build_and_concat_label_mask
 

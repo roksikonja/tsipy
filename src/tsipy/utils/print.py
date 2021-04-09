@@ -1,6 +1,12 @@
+"""
+Pretty print utilities with indents, print blocks and colors.
+"""
 from typing import Dict
 
-terminal_color_tokens: Dict[str, str] = {
+__all__ = ["cformat", "pformat", "pprint", "pprint_block"]
+
+
+_terminal_color_tokens: Dict[str, str] = {
     "white": "\033[97m",
     "gray": "\033[90m",
     "purple": "\033[95m",
@@ -11,14 +17,14 @@ terminal_color_tokens: Dict[str, str] = {
     "red": "\033[91m",
 }
 
-terminal_end_token: str = "\033[0m"
+_terminal_end_token: str = "\033[0m"
 
 
 def cformat(string: str, color: str = None) -> str:
     """Colors the input string."""
-    if color is not None and color in terminal_color_tokens:
-        start_token = terminal_color_tokens[color]
-        end_token = terminal_end_token
+    if color is not None and color in _terminal_color_tokens:
+        start_token = _terminal_color_tokens[color]
+        end_token = _terminal_end_token
         return start_token + string + end_token
 
     return string
@@ -40,7 +46,7 @@ def pformat(*args: object, shift: int = 50, level: int = 0, color: str = None) -
         format_str = cformat(format_str, color=color)
         return format_str.format(*args)
 
-    format_str = format_str + "    ".join(["{}" for _ in range(len(args) - 1)])
+    format_str += "    ".join(["{}" for _ in range(len(args) - 1)])
     format_str = cformat(format_str, color=color)
     return format_str.format(*args)
 

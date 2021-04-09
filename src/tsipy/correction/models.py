@@ -7,7 +7,6 @@ import scipy.optimize
 from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LinearRegression
 
-
 __all__ = [
     "load_model",
     "DegradationModel",
@@ -33,16 +32,15 @@ class DegradationModel(ABC):
     @abstractmethod
     def __call__(self, x: np.ndarray) -> np.ndarray:
         """Inference method."""
-        pass
+        raise NotImplementedError
 
     def initial_fit(self, x_a: np.ndarray, y_a: np.ndarray, y_b: np.ndarray) -> None:
         """Obtains an initial approximation for the model."""
-        pass
 
     @abstractmethod
     def fit(self, x_a: np.ndarray, ratio: np.ndarray) -> None:
         """Learns a mapping from exposure to signal ratio.."""
-        pass
+        raise NotImplementedError
 
 
 class ExpFamilyMixin:
@@ -59,8 +57,8 @@ class ExpFamilyMixin:
         epsilon = 1e-5
         gamma = np.min(ratio)
 
-        y = np.log(ratio - gamma + epsilon)
         x = x_a.reshape(-1, 1)
+        y = np.log(ratio - gamma + epsilon)
 
         regression = LinearRegression(fit_intercept=True)
         regression.fit(x, y)
@@ -112,7 +110,7 @@ class ExpModel(DegradationModel, ExpFamilyMixin):
         return self._exp(x, *self.params)
 
     def initial_fit(self, x_a: np.ndarray, y_a: np.ndarray, y_b: np.ndarray) -> None:
-        ratio = np.divide(y_a, y_b)
+        ratio = np.divide(y_a, y_b + 1e-9)
         theta_1, theta_2 = self._initial_fit(x_a=x_a, ratio=ratio)
 
         self.params = np.array([theta_1, theta_2], dtype=np.float)
@@ -144,7 +142,7 @@ class ExpLinModel(DegradationModel, ExpFamilyMixin):
         return self._exp_lin(x, *self.params)
 
     def initial_fit(self, x_a: np.ndarray, y_a: np.ndarray, y_b: np.ndarray) -> None:
-        ratio_m = np.divide(y_a, y_b)
+        ratio_m = np.divide(y_a, y_b + 1e-9)
         theta_1, theta_2 = self._initial_fit(x_a=x_a, ratio=ratio_m)
 
         self.initial_params = np.array([theta_1, theta_2, 0.0], dtype=np.float)
@@ -247,7 +245,7 @@ class SmoothMRModel(DegradationModel):
         return model
 
 
-def load_model(degradation_model: str) -> DegradationModel:
+def load_model(model: str) -> DegradationModel:
     """Loads a degradation model given the model name.
 
     Currently, the following models are implemented
@@ -257,16 +255,16 @@ def load_model(degradation_model: str) -> DegradationModel:
         - smooth monotonic regression ``smr``.
 
     Args:
-        degradation_model: String abbreviation of the model name.
+        model: String abbreviation of the model name.
     """
-    degradation_model = degradation_model.lower()
-    if degradation_model == "exp":
+    model = model.lower()
+    if model == "exp":
         return ExpModel()
-    elif degradation_model == "explin":
+    elif model == "explin":
         return ExpLinModel()
-    elif degradation_model == "mr":
+    elif model == "mr":
         return MRModel()
-    elif degradation_model == "smr":
+    elif model == "smr":
         return SmoothMRModel()
-    else:
-        raise ValueError("Invalid degradation model type.")
+
+    raise ValueError("Invalid degradation model type.")

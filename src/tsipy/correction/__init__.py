@@ -1,13 +1,13 @@
-from .algorithms import correct_both, correct_degradation, correct_one, History
+from .algorithms import History, correct_both, correct_degradation, correct_one
 from .exposure import compute_exposure
 from .generator import SignalGenerator
 from .models import (
-    load_model,
     DegradationModel,
-    ExpModel,
     ExpLinModel,
+    ExpModel,
     MRModel,
     SmoothMRModel,
+    load_model,
 )
 
 __all__ = [

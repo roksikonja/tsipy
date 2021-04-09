@@ -1,27 +1,44 @@
+"""
+A script for fusing three TSI signals into a single composite using Gaussian Processes.
+"""
 import argparse
 import datetime
 import os
-from typing import Tuple
 
 import gpflow as gpf
 import numpy as np
 import pandas as pd
 import scipy.signal
 import tensorflow as tf
-import tsipy.fusion
+
+from tsipy.fusion import LocalGPModel, SVGPModel
+from tsipy.fusion.kernels import MultiWhiteKernel
 from tsipy.fusion.utils import (
     build_and_concat_label_mask,
     build_and_concat_label_mask_output,
 )
-from tsipy.utils import pprint, pprint_block, sort_inputs
-from tsipy_utils.data import make_dir, transform_time_to_unit
-from tsipy_utils.visualizer import plot_signals, plot_signals_and_confidence
+from tsipy.utils import (
+    make_dir,
+    plot_signals,
+    plot_signals_and_confidence,
+    pprint,
+    pprint_block,
+    sort_inputs,
+    transform_time_to_unit,
+)
 
 
 def parse_arguments():
+    """Parses command line arguments specifying processing method."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--experiment_name", "-e", default="exp_fusion", type=str)
-    parser.add_argument("--dataset_name", "-d", default="exp_fusion", type=str)
+    parser.add_argument(
+        "--dataset_name",
+        "-d",
+        default="acrim",
+        type=str,
+        help="Choices: acrim_erbs, acrim.",
+    )
 
     # Fusion Model
     parser.add_argument("--fusion_model", "-m", default="svgp", type=str)
@@ -31,8 +48,8 @@ def parse_arguments():
     parser.add_argument("--clipping", "-c", action="store_false")
 
     # SVGP
-    parser.add_argument("--num_inducing_pts", "-n_ind_pts", default=1000, type=int)
-    parser.add_argument("--max_iter", default=8000, type=int)
+    parser.add_argument("--num_inducing_pts", "-n_ind_pts", default=100, type=int)
+    parser.add_argument("--max_iter", default=1000, type=int)
 
     # Local GP
     parser.add_argument("--pred_window", "-p_w", default=0.2, type=float)
@@ -43,14 +60,15 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def load_dataset(dataset_name: str) -> Tuple[pd.DataFrame, np.ndarray]:
+def load_dataset(dataset_name: str) -> pd.DataFrame:
+    """Loads the ACRIM or ACRIM+ERBS dataset."""
     if dataset_name == "acrim_erbs":
-        data = pd.read_csv(
+        data_ = pd.read_csv(
             os.path.join("../data", "VIRGOnew_ERBS_ACRIM2.txt"),
             delimiter=" ",
             header=None,
         )
-        data = data.rename(
+        data_ = data_.rename(
             columns={
                 0: "t",
                 1: "a",
@@ -59,19 +77,19 @@ def load_dataset(dataset_name: str) -> Tuple[pd.DataFrame, np.ndarray]:
             }
         )
 
-        t_org = data["t"].values.copy()
-        data["t"] = transform_time_to_unit(
-            data["t"] - data["t"][0],
+        data_["t_org"] = data_["t"].values.copy()
+        data_["t"] = transform_time_to_unit(
+            data_["t"] - data_["t"][0],
             t_label="year",
             start=datetime.datetime(1996, 1, 1),
         )
     elif dataset_name == "acrim":
-        data = pd.read_csv(
+        data_ = pd.read_csv(
             os.path.join("../data", "ACRIM1_SATIRE_HF.txt"),
             delimiter=" ",
             header=None,
         )
-        data = data.rename(
+        data_ = data_.rename(
             columns={
                 0: "t",
                 1: "a",
@@ -79,26 +97,28 @@ def load_dataset(dataset_name: str) -> Tuple[pd.DataFrame, np.ndarray]:
                 3: "c",
             }
         )
-        t_org = data["t"].values.copy()
-        data["t"] = transform_time_to_unit(
-            data["t"] - data["t"][0],
+        data_["t_org"] = data_["t"].values.copy()
+        data_["t"] = transform_time_to_unit(
+            data_["t"] - data_["t"][0],
             t_label="year",
             start=datetime.datetime(1980, 1, 1),
         )
     else:
         raise ValueError("Dataset {} does not exist.".format(dataset_name))
 
-    return data, t_org
+    return data_
 
 
 if __name__ == "__main__":
     args = parse_arguments()
 
     pprint_block("Experiment", args.experiment_name)
-    results_dir = make_dir(os.path.join("../results", args.experiment_name))
+    results_dir = make_dir(
+        os.path.join("../results", f"{args.experiment_name}_{args.dataset_name}")
+    )
 
     pprint_block("Dataset")
-    data, t_org = load_dataset(args.dataset)
+    data = load_dataset(args.dataset_name)
     t_a = t_b = t_c = data["t"].values
     a = data["a"].values
     b = data["b"].values
@@ -166,17 +186,15 @@ if __name__ == "__main__":
 
     # Kernel
     matern_kernel = gpf.kernels.Matern12(active_dims=[0])
-    white_kernel = tsipy.fusion.kernels.MultiWhiteKernel(
-        labels=(1, 2, 3), active_dims=[1]
-    )
+    white_kernel = MultiWhiteKernel(labels=(1, 2, 3), active_dims=[1])
     kernel = matern_kernel + white_kernel
 
     if args.fusion_model == "localgp":
-        local_model = tsipy.fusion.SVGPModel(
+        local_model = SVGPModel(
             kernel=kernel,
             num_inducing_pts=args.num_inducing_pts,
         )
-        fusion_model = tsipy.fusion.local_gp.LocalGPModel(
+        fusion_model = LocalGPModel(
             model=local_model,
             pred_window_width=1.0,
             fit_window_width=1.0,
@@ -184,7 +202,7 @@ if __name__ == "__main__":
             clipping=args.clipping,
         )
     else:
-        fusion_model = tsipy.fusion.SVGPModel(  # type: ignore
+        fusion_model = SVGPModel(  # type: ignore
             kernel=kernel,
             num_inducing_pts=args.num_inducing_pts,
             normalization=args.normalization,
@@ -199,10 +217,10 @@ if __name__ == "__main__":
     pprint_block("Inference", level=2)
     s_out_mean, s_out_std = fusion_model(t_out)
 
-    pprint_block("Results")
-    pprint("t_out", t_out.shape)
-    pprint("s_out_mean", s_out_mean.shape)
-    pprint("s_out_std", s_out_std.shape)
+    pprint("Output Signal", level=0)
+    pprint("- t_out", t_out.shape, level=1)
+    pprint("- s_out_mean", s_out_mean.shape, level=1)
+    pprint("- s_out_std", s_out_std.shape, level=1)
 
     fig, ax = plot_signals_and_confidence(
         [(t_out[:, 0], s_out_mean, s_out_std, "SVGP")],
@@ -272,7 +290,7 @@ if __name__ == "__main__":
 
     data_results = pd.DataFrame(
         {
-            "t" + "_org": t_org,
+            "t_org": data["t_org"].values,
             "t": t_out[:, 0],
             "s_out_mean": s_out_mean,
             "s_out_std": s_out_std,

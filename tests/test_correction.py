@@ -1,4 +1,5 @@
 import numpy as np
+
 import tsipy.correction
 from tests.utils import check_array_approximate
 
@@ -37,7 +38,7 @@ def test_degradation(tolerance: float = 0.01) -> None:
             e_a_m, e_b_m = data_m["e_a"].values, data_m["e_b"].values
 
             degradation_model = tsipy.correction.load_model(model_name)
-            degradation_model.initial_fit(a_m, b_m, e_a_m)
+            degradation_model.initial_fit(x_a=e_a_m, y_a=a_m, y_b=b_m)
 
             (
                 a_m_c,

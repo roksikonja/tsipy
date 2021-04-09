@@ -9,66 +9,25 @@ Degradation Correction
 Exposure
 --------
 
-.. currentmodule:: tsipy.correction
-
-.. autofunction:: compute_exposure
-
+.. automodule:: tsipy.correction.exposure
+    :members:
 
 Algorithms
 ----------
 
-.. currentmodule:: tsipy.correction
-
-.. class:: History
-
-    A :func:`~collections.namedtuple` representing signals and ratio at a particular
-    step of the iterative degradation correction process.
-
-    .. attribute:: iteration
-
-    .. attribute:: a
-
-    .. attribute:: b
-
-    .. attribute:: ratio
-
-
-.. autofunction:: correct_degradation
-
-.. autofunction:: correct_one
-
-.. autofunction:: correct_both
-
+.. automodule:: tsipy.correction.algorithms
+    :members:
 
 Degradation Models
 ------------------
 
-.. currentmodule:: tsipy.correction
-
-.. autofunction:: load_model
-
-.. autoclass:: DegradationModel
+.. automodule:: tsipy.correction.models
     :members:
-
-.. autoclass:: ExpModel
-    :members:
-
-.. autoclass:: ExpLinModel
-    :members:
-
-.. autoclass:: MRModel
-    :members:
-
-.. autoclass:: SmoothMRModel
-    :members:
-
 
 Signal Generator
 ----------------
 
-.. currentmodule:: tsipy.correction
-
-.. autoclass:: SignalGenerator
+.. automodule:: tsipy.correction.generator
     :members:
 
 

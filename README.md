@@ -27,3 +27,7 @@ Demos can be found in ```./scripts```.
 
     python ./scripts/demo_degradation.py
     python ./scripts/demo_fusion.py
+
+## References
+
+References can be found in ```./paper```.

@@ -5,11 +5,14 @@
 # TSIPY
 
 Python package for processing TSI signals.
+
 Full documentation is available [online](https://tsipy.readthedocs.io/).
 
 ## Installation
 
-Tested with ```3.7.x```. In Python ```3.8.x``` there is a conflict between dependencies ```cvxpy``` and ```tensorflow```
+In Python ```3.8.x``` or ``3.7.x`` there is a conflict between dependencies ```cvxpy``` and ```tensorflow```.
+Which is not yet resolved.
+
 .
 
     # install from source

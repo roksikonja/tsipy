@@ -1,3 +1,7 @@
+<a href='https://tsipy.readthedocs.io/en/latest/?badge=latest'>
+    <img src='https://readthedocs.org/projects/tsipy/badge/?version=latest' alt='Documentation Status' />
+</a>
+
 # TSIPY
 
 Python package for processing TSI signals.

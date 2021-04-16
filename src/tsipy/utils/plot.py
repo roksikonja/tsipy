@@ -65,7 +65,7 @@ def configure_plot(
     ax: Axes,
     x_ticker: int = None,
     legend: str = None,
-    y_lim: float = None,
+    y_lim: Optional[Tuple[float, float]] = None,
     x_label: str = None,
     y_label: str = None,
     log_scale_x: bool = False,
@@ -80,7 +80,7 @@ def configure_plot(
         ax.legend(loc=legend)
 
     if y_lim:
-        ax.set_ylim(y_lim)
+        ax.set_ylim(*y_lim)
 
     if x_label:
         ax.set_xlabel(x_label)
@@ -192,10 +192,16 @@ def plot_signals_history(
     fig, axs = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=fig_size)
 
     for i, signals in enumerate(signals_history):
-        col = i % n_cols
-        row = i // n_rows
-
-        ax = axs[row, col]
+        if n_rows == 1 and n_cols == 1:
+            ax = axs
+        elif n_rows == 1:
+            ax = axs[i]
+        elif n_cols == 1:
+            ax = axs[i]
+        else:
+            col = i % n_cols
+            row = i // n_rows
+            ax = axs[row, col]
 
         for signal_pair in signals:
             y, label = signal_pair

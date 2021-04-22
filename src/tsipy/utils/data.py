@@ -50,7 +50,6 @@ def is_integer(num: Any) -> bool:
 
 def downsample_signal(x: np.ndarray, k: int = 1) -> np.ndarray:
     """Downsamples a signal uniformly with a rate of ``k``."""
-    # pylint: disable=C0103
     if not is_integer(k):
         raise Exception("Downsampling factor must be an integer.")
     if k > 1:
@@ -63,7 +62,7 @@ def downsampling_indices_by_max_points(
     x: np.ndarray, max_points: int = 100_000
 ) -> np.ndarray:
     """Computes indices of a uniformly downsampled signal of length ``max_points``."""
-    # pylint: disable=C0103
+
     indices = np.ones_like(x, dtype=np.bool)
     if x.shape[0] > max_points:
         downsampling_factor = x.shape[0] // max_points
@@ -88,7 +87,7 @@ def transform_time_to_unit(
         array([1996.  , 1996.25, 1996.5 , 1996.75, 1997.  ])
 
     """
-    # pylint: disable=C0103
+
     if t_label == "year":
         t = np.array(
             [start.year + ((start.timetuple().tm_yday - 1) + day) / 365.25 for day in t]
@@ -127,7 +126,7 @@ def is_sorted(array: np.ndarray) -> bool:
     Returns:
         True if array is sorted and False otherwise.
     """
-    # pylint: disable=C0103
+
     assert len(array.shape) == 1
     return all(array[i] <= array[i + 1] for i in range(len(array) - 1))
 
@@ -135,7 +134,7 @@ def is_sorted(array: np.ndarray) -> bool:
 def sort_inputs(
     x: np.ndarray, y: np.ndarray, sort_axis: int
 ) -> Tuple[np.ndarray, np.ndarray]:
-    # pylint: disable=C0103
+
     if len(x.shape) != 2:
         raise ValueError("Array x with shape {} is not 2D.".format(x.shape))
     if len(y.shape) != 2:
@@ -150,7 +149,7 @@ def sort_inputs(
 
 def normalize(x: np.ndarray, mean: float, scale: float) -> np.ndarray:
     """Normalize array in the first dimension as given by y = (x - mean) / scale."""
-    # pylint: disable=C0103
+
     if len(x.shape) <= 1:
         y = (x - mean) / scale
     else:
@@ -161,7 +160,7 @@ def normalize(x: np.ndarray, mean: float, scale: float) -> np.ndarray:
 
 def denormalize(y: np.ndarray, mean: float, scale: float) -> np.ndarray:
     """Denormalize array in the first dimension as given by x = y * scale + mean."""
-    # pylint: disable=C0103
+
     if len(y.shape) <= 1:
         x = scale * y + mean
     else:
@@ -215,7 +214,7 @@ def nonclipped_indices(x: np.ndarray, n_scale: float = 5.0) -> np.ndarray:
     Non-clipped index i satisfies:
         x_mean + n_std * x_std >= x[i] >= x_mean - n_std * x_std.
     """
-    # pylint: disable=C0103
+
     clip_mean, clip_std = np.mean(x), np.std(x)
 
     lower_ids = np.greater_equal(x, clip_mean - n_scale * clip_std)
@@ -269,7 +268,7 @@ def get_window_indices(x: np.ndarray, x_start: float, x_end: float) -> Tuple[int
     Returns: A tuple of a start and end index of x, such that
         x_start <= x[x_start_id:x_end_id + 1] <= x_end.
     """
-    # pylint: disable=C0103
+
     x_start_id = closest_binary_search(array=x, value=x_start)
     # Handle a range of equal values
     if x_start_id != 0:

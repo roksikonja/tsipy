@@ -56,7 +56,7 @@ class MultiWhiteKernel(gpf.kernels.Kernel):
 
     # noinspection PyPep8Naming
     def K(self, X: tf.Tensor, X2: Optional[tf.Tensor] = None) -> tf.Tensor:
-        # pylint: disable=C0103
+
         if X2 is None:
             diag = self.K_diag(X)
             return tf.linalg.diag(diag)
@@ -66,7 +66,7 @@ class MultiWhiteKernel(gpf.kernels.Kernel):
 
     # noinspection PyPep8Naming
     def K_diag(self, X: tf.Tensor) -> tf.Tensor:
-        # pylint: disable=C0103
+
         X = tf.squeeze(X)
 
         diag = tf.zeros((tf.shape(X)[0],), dtype=X.dtype)  # (None, 1)

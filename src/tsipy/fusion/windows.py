@@ -152,7 +152,7 @@ class Windows:
 def create_prediction_windows(
     x: np.ndarray, pred_window_width: float, verbose: bool = False
 ) -> List[Tuple[float, float, float]]:
-    # pylint: disable=C0103
+
     """Computes bounds of prediction windows.
 
     Returns:
@@ -194,7 +194,7 @@ def create_fit_windows(
     pred_windows: List[Tuple[float, float, float]],
     verbose: bool = False,
 ) -> List[Tuple[float, float]]:
-    # pylint: disable=C0103
+
     x_min, x_max = x[:, 0].min(), x[:, 0].max()
 
     fit_windows = []
@@ -219,7 +219,7 @@ def create_windows(
     fit_window_width: float,
     verbose: bool = False,
 ) -> Windows:
-    # pylint: disable=C0103
+
     assert is_sorted(x[:, 0]), "Input array x is not sorted in dimension 0."
     assert (
         pred_window_width <= fit_window_width

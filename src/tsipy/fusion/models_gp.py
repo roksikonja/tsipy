@@ -3,7 +3,6 @@ from typing import List, Optional, Tuple
 import gpflow as gpf
 import numpy as np
 import tensorflow as tf
-from gpflow.utilities.utilities import default_summary_fmt, tabulate_module_summary
 
 from ..fusion.core import FusionModel, NormalizeAndClip
 from ..utils import find_nearest_indices, pprint
@@ -33,15 +32,16 @@ class SVGPModel(FusionModel):
         self.t_posterior: Optional[np.ndarray] = None
         self.history: Optional[List] = None
 
-    def __str__(self) -> str:
-        return tabulate_module_summary(self._model, default_summary_fmt())
-
     def __call__(
         self, x: np.ndarray, verbose: bool = False
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Equivalent to :member:`predict` method."""
         y_mean, y_std = self.predict(x)
         return y_mean, y_std
+
+    def print(self):
+        assert self._model is not None, "Model is not initialized."
+        gpf.utilities.print_summary(self._model)
 
     def predict(self, x: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         assert self._model is not None, "Model is not initialized."

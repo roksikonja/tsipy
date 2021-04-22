@@ -4,6 +4,7 @@ from typing import Any, Tuple
 import numpy as np
 import scipy.interpolate
 import scipy.optimize
+from qpsolvers import solve_qp
 from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LinearRegression
 
@@ -163,7 +164,6 @@ class MRModel(DegradationModel):
         self,
         y_max: float = 1.0,
         y_min: float = 0.0,
-        increasing: bool = False,
         out_of_bounds: str = "clip",
     ) -> None:
         """Initializes degradation model MRModel."""
@@ -172,7 +172,7 @@ class MRModel(DegradationModel):
         self._model = IsotonicRegression(
             y_max=y_max,
             y_min=y_min,
-            increasing=increasing,
+            increasing=False,
             out_of_bounds=out_of_bounds,
         )
 
@@ -188,24 +188,24 @@ class SmoothMRModel(DegradationModel):
         self,
         y_max: float = 1.0,
         y_min: float = 0.0,
-        increasing: bool = False,
         out_of_bounds: str = "clip",
-        number_of_points: int = 999,
+        n_pts: int = 999,
         lam: float = 1.0,
+        solver: str = "quadprog",
         convex: bool = False,
     ) -> None:
         """Initializes degradation model SmoothMRModel."""
+        self.solver = solver
         self.convex = convex
 
-        self.increasing = increasing
-        self.number_of_points = number_of_points
+        self.n_pts = n_pts
         self.lam = lam
 
         self._model = None
         self._mr_model = IsotonicRegression(
             y_max=y_max,
             y_min=y_min,
-            increasing=increasing,
+            increasing=False,
             out_of_bounds=out_of_bounds,
         )
 
@@ -214,34 +214,67 @@ class SmoothMRModel(DegradationModel):
         return self._model(x)
 
     def fit(self, x_a: np.ndarray, ratio: np.ndarray) -> None:
-        self._mr_model.fit(x_a, ratio)
-
-        x = np.linspace(0, np.max(x_a), self.number_of_points)
-        y = self._mr_model.predict(x)
-
-        self._model = self._solve_smooth_mr(x, y)
+        self._model = self._solve_smooth_mr(x=x_a, y=ratio)
 
     def _solve_smooth_mr(self, x: np.ndarray, y: np.ndarray) -> Any:
         """Builds and solves smooth monotonic regression problem."""
 
-        import cvxpy as cp  # TODO: Resolve conflict between cvxpy and tf.
+        # To resolve numerical issues, we fit monotonic regression first
+        self._mr_model.fit(x, y)
+        x = np.linspace(0, np.max(x), self.n_pts)
+        y = self._mr_model.predict(x)
 
-        mu = cp.Variable(self.number_of_points)
-        objective = cp.Minimize(
-            cp.sum_squares(mu - y) + self.lam * cp.sum_squares(mu[:-1] - mu[1:])
+        # Smooth monotonic regression
+        # Linear cost
+        q = -2 * y
+
+        # Quadratic cost
+        P = np.zeros((self.n_pts, self.n_pts))
+        np.fill_diagonal(P, 1 + 2 * self.lam)
+        P[0, 0] = 1 + self.lam
+        P[-1, -1] = 1 + self.lam
+
+        ids = np.arange(self.n_pts - 1)
+        P[ids, ids + 1] = -self.lam
+        P[ids + 1, ids] = -self.lam
+
+        # Scale due to 1/2 in QP definition
+        P = 2.0 * P
+
+        # Inequality constraints
+        # Monotonicity theta[i] >= theta[i + 1]
+        G = np.zeros((self.n_pts - 1, self.n_pts))
+        np.fill_diagonal(G, -1.0)
+        ids = np.arange(self.n_pts - 1)
+        G[ids, ids + 1] = 1.0
+        h = np.zeros((self.n_pts - 1))
+
+        # Equality constraints
+        # theta[0] = 1
+        A = np.zeros((self.n_pts,))
+        A[0] = 1.0
+        b = np.array([1.0])
+
+        # Upper and lower bounds of theta
+        # 0.0 <= theta[i] <= 1.0
+        lb = np.zeros((self.n_pts,))
+        ub = np.ones((self.n_pts,))
+
+        theta: np.ndarray = solve_qp(
+            P=P,
+            q=q,
+            G=G,
+            h=h,
+            A=A,
+            b=b,
+            lb=lb,
+            ub=ub,
+            solver=self.solver,
+            sym_proj=False,
+            verbose=True,
         )
 
-        constraints = [mu <= 1, mu[0] == 1]
-        if not self.increasing:
-            constraints.append(mu[1:] <= mu[:-1])
-
-        if self.convex:
-            constraints.append(mu[:-2] + mu[2:] >= 2 * mu[1:-1])
-
-        model = cp.Problem(objective, constraints)
-        model.solve(solver=cp.ECOS_BB)
-
-        model = scipy.interpolate.interp1d(x, mu.value, fill_value="extrapolate")
+        model = scipy.interpolate.interp1d(x, theta, fill_value="extrapolate")
         return model
 
 

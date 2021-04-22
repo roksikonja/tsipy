@@ -24,6 +24,7 @@
 - Project restructuring.
 - Added mypy typing.
 - Added LocalGP.
+- Changed dependency for solving QPs: from ```cvxpy``` to ```qpsolvers```.
 
 - Added pytest tests.
 - Partially added docstrings.

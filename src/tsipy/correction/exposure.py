@@ -29,7 +29,6 @@ def compute_exposure(
         >>> compute_exposure(x, method="exposure_sum")
         array([ 1.,  1.,  4.,  8., 13.])
     """
-    # pylint: disable=C0103
     if x.ndim != 1:
         raise ValueError(f"x of shape {x.shape} is not 1D array.")
 

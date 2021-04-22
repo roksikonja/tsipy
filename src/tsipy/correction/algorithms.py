@@ -239,7 +239,6 @@ def _check_convergence(
     eps: float = 1e-6,
 ) -> bool:
     """Computes relative difference between consecutive steps and checks convergence."""
-    # pylint: disable=C0103
     delta_norm_a = np.linalg.norm(a - ref_a) / np.linalg.norm(ref_a)
     delta_norm_b = np.linalg.norm(b - ref_b) / np.linalg.norm(ref_b)
 

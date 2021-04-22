@@ -11,7 +11,7 @@ from .models import ExpModel
 __all__ = ["SignalGenerator"]
 
 
-class SignalGenerator(object):
+class SignalGenerator:
     """Class for generating sample signals."""
 
     def __init__(

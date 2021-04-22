@@ -6,7 +6,7 @@ from tests.utils import check_array_approximate
 
 def test_degradation(tolerance: float = 0.01) -> None:
     for i in range(5):
-        for model_name in ["exp", "explin", "mr"]:
+        for model_name in ["exp", "explin", "mr", "smr"]:
             np.random.seed(i)
 
             signal_generator = tsipy.correction.SignalGenerator(

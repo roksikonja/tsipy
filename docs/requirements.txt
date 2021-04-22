@@ -6,3 +6,5 @@ sphinxcontrib-spelling
 ipython
 nbsphinx
 pandoc
+numpy
+gpflow

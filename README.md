@@ -10,22 +10,9 @@ Full documentation is available [online](https://tsipy.readthedocs.io/).
 
 ## Installation
 
-In Python ```3.8.x``` or ``3.7.x`` there is a conflict between dependencies ```cvxpy``` and ```tensorflow```.
-Which is not yet resolved.
-
-.
-
     # install from source
     git clone https://github.com/roksikonja/tsipy.git
-    pip install -e .
-
-    # install manually
-    pip install numpy pandas matplotlib scipy tables cvxpy gpflow tensorflow scikit-learn
-    pip install -e . --no-deps
-
-    # install using conda
-    conda create --name tsipy python=3.7
-    conda activate tsipy
+    python -m pip install --upgrade pip
     pip install -e .
 
 ## Usage

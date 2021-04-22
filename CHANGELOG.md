@@ -25,17 +25,16 @@
 - Added mypy typing.
 - Added LocalGP.
 - Changed dependency for solving QPs: from ```cvxpy``` to ```qpsolvers```.
-
+- Added github action for mypy.
+  
 - Added pytest tests.
 - Partially added docstrings.
 
 ## v0.1.0 - 11. 3. 2021
 
 - Add LocalGP.
-    - TODO: 
     - Fix normalization, test with generator data.
     - Add test for Virgo dataset.
-    - Fix import error for cvxpy.
 
 ## v0.0.1 - 26. 2. 2021
 

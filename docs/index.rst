@@ -1,6 +1,9 @@
 tsipy Documentation
 ===================
 
+Source code is available `here <https://github.com/roksikonja/tsipy>`_.
+
+
 .. automodule:: tsipy
     :members:
 

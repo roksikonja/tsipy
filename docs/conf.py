@@ -3,13 +3,6 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../src"))
 
-print("\n\n" + "-" * 100)
-print("pwd", os.getcwd())
-print(".", "\n    - ".join([""] + os.listdir(".")))
-print("..", "\n    - ".join([""] + os.listdir("..")))
-print("path", "\n    - ".join([""] + sys.path))
-print("-" * 100 + "\n\n")
-
 project = "tsipy"
 copyright = "2021, Rok Šikonja"
 author = "Rok Šikonja"

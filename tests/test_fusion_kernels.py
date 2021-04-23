@@ -7,10 +7,7 @@ from tsipy.fusion.utils import build_and_concat_label_mask
 
 
 def test_kernel() -> None:
-    """
-    Test implementation of the custom white kernel.
-    """
-
+    """Test implementation of the custom white kernel."""
     np.random.seed(0)
 
     x_a = np.random.randint(0, 5, 3)

@@ -50,14 +50,21 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def load_dataset(dataset_name: str) -> pd.DataFrame:
+def load_dataset(dataset_name: str):
     """Loads the VIRGO dataset."""
     if dataset_name == "virgo":
-        return pd.read_hdf(os.path.join("../data", "virgo_level1_2020.h5"), "table")
-    if dataset_name == "virgo_2020":
+        data_frame = pd.read_hdf(
+            os.path.join("../data", "virgo_level1_2020.h5"), "table"
+        )
+        data_frame = data_frame.rename(
+            columns={"TIME": "t", "PMO6V-A": "a", "PMO6V-B": "b"}
+        )
+        data_frame.drop(columns=["TEMPERATURE"], inplace=True)
+        return data_frame
+    elif dataset_name == "virgo_2020":
         return pd.read_hdf(os.path.join("../data", "virgo_2020.h5"), "table")
-
-    raise ValueError("Dataset {} does not exist.".format(dataset_name))
+    else:
+        raise ValueError("Dataset {} does not exist.".format(dataset_name))
 
 
 if __name__ == "__main__":
@@ -72,6 +79,7 @@ if __name__ == "__main__":
 
     # Load data
     data = load_dataset("virgo")
+    print(data.head())
 
     # Compute exposure
     e_a = compute_exposure(data["a"].values)
@@ -125,7 +133,6 @@ if __name__ == "__main__":
         results_dir=results_dir,
         title="signals",
         legend="upper right",
-        x_ticker=4,
         y_lim=[1357, 1369],
         show=args.figure_show,
     )
@@ -165,7 +172,6 @@ if __name__ == "__main__":
         results_dir=results_dir,
         title="signals_corrected",
         legend="upper right",
-        x_ticker=4,
         show=args.figure_show,
     )
 
@@ -177,7 +183,6 @@ if __name__ == "__main__":
         results_dir=results_dir,
         title="degradation",
         legend="lower left",
-        x_ticker=4,
         show=args.figure_show,
     )
 
@@ -194,7 +199,6 @@ if __name__ == "__main__":
         title="correction-history",
         n_rows=2,
         n_cols=2,
-        x_ticker=4,
         tight_layout=True,
         show=args.figure_show,
     )
@@ -204,7 +208,7 @@ if __name__ == "__main__":
 
     t_a_nn = build_and_concat_label_mask(t_a_nn, label=1)
     t_b_nn = build_and_concat_label_mask(t_b_nn, label=2)
-    t_out = get_time_output([t_a_nn, t_b_nn], n_per_unit=365 * 24)
+    t_out = get_time_output([t_a_nn, t_b_nn], n_per_unit=24)
     t_out = build_and_concat_label_mask_output(t_out)
 
     # Concatenate signals and sort by x[:, 0]
@@ -242,7 +246,6 @@ if __name__ == "__main__":
         [(t_out, s_out_mean, s_out_std, "SVGP")],
         results_dir=results_dir,
         title="signals_fused",
-        x_ticker=4,
         y_lim=[1362, 1369],
     )
     indices_a = downsampling_indices_by_max_points(

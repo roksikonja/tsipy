@@ -4,7 +4,8 @@ import tsipy.correction
 from tests.utils import check_array_approximate
 
 
-def test_degradation(tolerance: float = 0.01) -> None:
+def test_degradation() -> None:
+    tolerance = 0.01
     for i in range(5):
         for model_name in ["exp", "explin", "mr", "smr"]:
             np.random.seed(i)

@@ -7,7 +7,7 @@ from tsipy.fusion.kernels import MultiWhiteKernel
 from tsipy.utils import pprint, pprint_block
 
 
-def test_svgp_convergence_with_labels(verbose: bool = True) -> None:
+def test_svgp_convergence_with_labels(verbose: bool = False) -> None:
     if verbose:
         pprint_block("Convergence of SVGP to ground truth with sensor labels")
 
@@ -23,7 +23,7 @@ def test_svgp_convergence_with_labels(verbose: bool = True) -> None:
     _run_svgp(x, y, y_gt, x_out, kernel, random_seed, verbose)
 
 
-def test_svgp_convergence_without_labels(verbose: bool = True) -> None:
+def test_svgp_convergence_without_labels(verbose: bool = False) -> None:
     if verbose:
         pprint_block("Convergence of SVGP to ground truth without sensor labels")
 

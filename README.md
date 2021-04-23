@@ -1,8 +1,8 @@
 <a href='https://tsipy.readthedocs.io/en/latest/?badge=latest'>
     <img src='https://readthedocs.org/projects/tsipy/badge/?version=latest' alt='Documentation Status' />
 </a>
-<a href='https://github.com/roksikonja/tsipy/actions/workflows/mypy.yml'>
-    <img src='https://github.com/roksikonja/tsipy/actions/workflows/mypy.yml/badge.svg' alt='mypy status' />
+<a href='https://github.com/roksikonja/tsipy/actions/workflows/ci.yml'>
+    <img src='https://github.com/roksikonja/tsipy/actions/workflows/ci.yml/badge.svg' alt='CI status' />
 </a>
 
 # TSIPY
@@ -27,4 +27,4 @@ Demos can be found in ```./scripts```.
 
 ## References
 
-References can be found in ```./paper```.
+References can be found in ```./references```.

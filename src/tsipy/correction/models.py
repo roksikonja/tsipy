@@ -190,7 +190,7 @@ class SmoothMRModel(DegradationModel):
         y_min: float = 0.0,
         out_of_bounds: str = "clip",
         n_pts: int = 999,
-        lam: float = 1.0,
+        lam: float = 10.0,
         solver: str = "quadprog",
         convex: bool = False,
     ) -> None:
@@ -248,6 +248,17 @@ class SmoothMRModel(DegradationModel):
         ids = np.arange(self.n_pts - 1)
         G[ids, ids + 1] = 1.0
         h = np.zeros((self.n_pts - 1))
+
+        # Convexity
+        if self.convex:
+            C = np.zeros((self.n_pts - 2, self.n_pts))
+            np.fill_diagonal(C, -1.0)
+            C[ids, ids + 1] = 2.0
+            C[ids, ids + 2] = -1.0
+            h_C = np.zeros((self.n_pts - 2))
+
+            G = np.vstack((G, C))
+            h = np.hstack((h, h_C))
 
         # Equality constraints
         # theta[0] = 1

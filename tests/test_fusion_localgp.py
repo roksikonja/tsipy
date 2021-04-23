@@ -8,7 +8,7 @@ from tsipy.utils import plot_signals, pprint, pprint_block
 
 
 def test_localgp_convergence_with_labels(
-    show: bool = True, verbose: bool = True
+    show: bool = False, verbose: bool = False
 ) -> None:
     if verbose:
         pprint_block("Convergence of LocalGP to ground truth with sensor labels")

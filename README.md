@@ -22,8 +22,8 @@ Full documentation is available [online](https://tsipy.readthedocs.io/).
 
 Demos can be found in ```./scripts```.
 
-    python ./scripts/demo_degradation.py
-    python ./scripts/demo_fusion.py
+    python ./scripts/exp_virgo.py
+    python ./scripts/exp_fusion.py
 
 ## References
 

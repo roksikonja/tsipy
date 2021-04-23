@@ -20,4 +20,8 @@ setup(
         "tables",
         "scikit-learn",
     ],
+    project_urls={
+        "Source": "https://github.com/roksikonja/tsipy",
+        "Documentation": "https://tsipy.readthedocs.io/en/latest/",
+    },
 )

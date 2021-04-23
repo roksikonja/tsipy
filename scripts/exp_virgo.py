@@ -39,7 +39,7 @@ def parse_arguments():
     parser.add_argument("--experiment_name", "-e", default="exp_virgo", type=str)
 
     # Degradation model
-    parser.add_argument("--degradation_model", "-dm", default="explin", type=str)
+    parser.add_argument("--degradation_model", "-dm", default="smr", type=str)
 
     # SVGP
     parser.add_argument("--num_inducing_pts", "-n_ind_pts", default=1000, type=int)
@@ -53,6 +53,8 @@ def parse_arguments():
 def load_dataset(dataset_name: str):
     """Loads the VIRGO dataset."""
     if dataset_name == "virgo":
+        return pd.read_hdf(os.path.join("../data", "VirgowithNan.h5"), "table")
+    elif dataset_name == "virgo_old_2020":
         data_frame = pd.read_hdf(
             os.path.join("../data", "virgo_level1_2020.h5"), "table"
         )
@@ -79,7 +81,6 @@ if __name__ == "__main__":
 
     # Load data
     data = load_dataset("virgo")
-    print(data.head())
 
     # Compute exposure
     e_a = compute_exposure(data["a"].values)
@@ -139,6 +140,9 @@ if __name__ == "__main__":
 
     pprint_block("Degradation Correction", level=1)
     degradation_model = load_model(args.degradation_model)
+    if args.degradation_model == "smr":
+        degradation_model.convex = True
+
     degradation_model.initial_fit(x_a=e_a_m, y_a=a_m, y_b=b_m)
 
     a_m_c, b_m_c, degradation_model, history = correct_degradation(

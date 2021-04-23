@@ -52,8 +52,20 @@ def parse_arguments():
     parser.add_argument("--max_iter", default=1000, type=int)
 
     # Local GP
-    parser.add_argument("--pred_window", "-p_w", default=0.2, type=float)
-    parser.add_argument("--fit_window", "-f_w", default=0.6, type=float)
+    parser.add_argument(
+        "--pred_window",
+        "-p_w",
+        default=1.0,
+        type=float,
+        help="Width of prediction window in years.",
+    )
+    parser.add_argument(
+        "--fit_window",
+        "-f_w",
+        default=3.0,
+        type=float,
+        help="Width of training window in years.",
+    )
 
     # Visualize
     parser.add_argument("-figure_show", action="store_true")
@@ -196,8 +208,8 @@ if __name__ == "__main__":
         )
         fusion_model = LocalGPModel(
             model=local_model,
-            pred_window_width=1.0,
-            fit_window_width=1.0,
+            pred_window_width=args.pred_window,
+            fit_window_width=args.fit_window,
             normalization=args.normalization,
             clipping=args.clipping,
         )
@@ -211,7 +223,7 @@ if __name__ == "__main__":
 
     # Train
     pprint_block("Training", level=2)
-    fusion_model.fit(t, s, max_iter=args.max_iter, x_val=t_out, n_evals=5)
+    fusion_model.fit(t, s, max_iter=args.max_iter, x_val=t_out, n_evals=5, verbose=True)
 
     # Predict
     pprint_block("Inference", level=2)

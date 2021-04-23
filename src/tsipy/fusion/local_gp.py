@@ -21,8 +21,8 @@ class LocalGPModel(FusionModel):
         self._nc = NormalizeAndClip(normalization=normalization, clipping=clipping)
 
         # Local windows attributes and parameters
-        self.pred_window_width = pred_window_width
-        self.fit_window_width = fit_window_width
+        self._pred_window_width = pred_window_width
+        self._fit_window_width = fit_window_width
         self._windows: Optional[Windows] = None
 
         # Local GP model that is trained within each window
@@ -32,6 +32,14 @@ class LocalGPModel(FusionModel):
     def windows(self) -> Windows:
         assert self._windows is not None, "Windows are not initialized."
         return self._windows
+
+    @property
+    def pred_window_width(self):
+        return self._pred_window_width
+
+    @property
+    def fit_window_width(self):
+        return self._fit_window_width
 
     def __call__(
         self, x: np.ndarray, verbose: bool = False

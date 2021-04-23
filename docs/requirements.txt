@@ -5,6 +5,7 @@ sphinx-rtd-theme
 sphinxcontrib-spelling
 ipython
 nbsphinx
+nbsphinx_link
 pandoc
 numpy
 tensorflow

@@ -23,6 +23,7 @@ extensions = [
     "sphinxcontrib.bibtex",
     "sphinx_rtd_theme",
     "nbsphinx",
+    "nbsphinx_link",
 ]
 
 if "spelling" in sys.argv:

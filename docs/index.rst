@@ -20,12 +20,18 @@ Getting Started
 ---------------
 
 .. toctree::
-    :caption: Tutorial
+    :caption: Tutorials
     :maxdepth: 1
 
     Degradation Correction <notebooks/demo_degradation.ipynb>
     Sensor Fusion <notebooks/demo_fusion.ipynb>
     Local GP and Windows <notebooks/demo_localgp.ipynb>
+
+.. toctree::
+    :caption: Experiments
+    :maxdepth: 1
+
+    VIRGO SPM dataset <notebooks/exp_spm.ipynb>
 
 .. toctree::
     :caption: Package Reference

@@ -4,6 +4,7 @@ from typing import Any, Tuple
 import numpy as np
 import scipy.interpolate
 import scipy.optimize
+from scipy.sparse import csc_matrix
 from qpsolvers import solve_qp
 from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LinearRegression
@@ -253,6 +254,7 @@ class SmoothMRModel(DegradationModel):
         if self.convex:
             C = np.zeros((self.n_pts - 2, self.n_pts))
             np.fill_diagonal(C, -1.0)
+            ids = np.arange(self.n_pts - 2)
             C[ids, ids + 1] = 2.0
             C[ids, ids + 2] = -1.0
             h_C = np.zeros((self.n_pts - 2))

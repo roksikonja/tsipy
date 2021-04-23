@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
+import tsipy.correction
 from tsipy.correction import compute_exposure, correct_degradation, load_model
 from tsipy.fusion import SVGPModel
 from tsipy.fusion.kernels import MultiWhiteKernel
@@ -140,7 +141,10 @@ if __name__ == "__main__":
 
     pprint_block("Degradation Correction", level=1)
     degradation_model = load_model(args.degradation_model)
+
+    # Enforce convexity if using SmoothMRModel and correct_one method
     if args.degradation_model == "smr":
+        assert isinstance(degradation_model, tsipy.correction.SmoothMRModel)
         degradation_model.convex = True
 
     degradation_model.initial_fit(x_a=e_a_m, y_a=a_m, y_b=b_m)

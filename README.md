@@ -13,6 +13,9 @@ Full documentation is available [online](https://tsipy.readthedocs.io/).
 
 ## Installation
 
+    # from pypi
+    pip install tsipy
+
     # install from source
     git clone https://github.com/roksikonja/tsipy.git
     python -m pip install --upgrade pip

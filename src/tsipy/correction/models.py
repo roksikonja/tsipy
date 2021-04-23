@@ -4,7 +4,6 @@ from typing import Any, Tuple
 import numpy as np
 import scipy.interpolate
 import scipy.optimize
-from scipy.sparse import csc_matrix
 from qpsolvers import solve_qp
 from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LinearRegression

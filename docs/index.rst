@@ -12,7 +12,12 @@ Installation
 
 .. code:: console
 
+    # from pypi
+    $ pip install tsipy
+
+    # install from source for developers
     $ git clone https://github.com/roksikonja/tsipy.git
+    $ python -m pip install --upgrade pip
     $ pip install -e .
 
 
@@ -35,7 +40,7 @@ Getting Started
 
 .. toctree::
     :caption: Package Reference
-    :maxdepth: 1
+    :maxdepth: 2
 
     Degradation Correction <correction.rst>
     Sensor Fusion <fusion.rst>

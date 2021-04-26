@@ -1,5 +1,5 @@
 """
-Plot utilities for visualizing signals, degradation history and signals with
+Plot utilities for visualizing signals, correction history and signals with
 confidence intervals.
 """
 import os
@@ -31,22 +31,13 @@ def set_style(
     legend_font_size: int = 16,
     marker_type: str = "x",
     out_format: str = "pdf",
+    latex: bool = False,
 ) -> None:
-    """Set default `pyplot` style."""
+    """Set `pyplot` style parameters."""
     # pylint: disable=R0913
     style.use(style_name)
 
     rc_params = {
-        "pgf.texsystem": "pdflatex",
-        "font.family": "serif",
-        "text.usetex": True,
-        "pgf.rcfonts": False,
-        "pgf.preamble": "\n".join(
-            [
-                "\\usepackage[utf8]{inputenc}",
-                "\\DeclareUnicodeCharacter{2212}{-}",
-            ]
-        ),
         "figure.figsize": fig_size,
         "font.size": font_size,
         "legend.fontsize": legend_font_size,
@@ -57,6 +48,20 @@ def set_style(
         "scatter.marker": marker_type,
         "savefig.format": out_format,
     }
+    if latex:
+        latex_rc_params = {
+            "pgf.texsystem": "pdflatex",
+            "font.family": "serif",
+            "text.usetex": True,
+            "pgf.rcfonts": False,
+            "pgf.preamble": "\n".join(
+                [
+                    "\\usepackage[utf8]{inputenc}",
+                    "\\DeclareUnicodeCharacter{2212}{-}",
+                ]
+            ),
+        }
+        rc_params = {**rc_params, **latex_rc_params}
 
     mpl.rcParams.update(rc_params)
 
@@ -65,6 +70,7 @@ def configure_plot(
     ax: Axes,
     x_ticker: int = None,
     legend: str = None,
+    x_lim: Optional[Tuple[float, float]] = None,
     y_lim: Optional[Tuple[float, float]] = None,
     x_label: str = None,
     y_label: str = None,
@@ -78,6 +84,9 @@ def configure_plot(
 
     if legend:
         ax.legend(loc=legend)
+
+    if x_lim:
+        ax.set_xlim(*x_lim)
 
     if y_lim:
         ax.set_ylim(*y_lim)

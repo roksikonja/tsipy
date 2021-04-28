@@ -4,14 +4,16 @@ from tests.utils import check_array_approximate
 from tests.utils_fusion import load_data_with_labels
 from tsipy.fusion import LocalGPModel, SVGPModel
 from tsipy.fusion.kernels import MultiWhiteKernel
-from tsipy.utils import plot_signals, pprint, pprint_block
+from tsipy.utils import plot_signals
 
 
 def test_localgp_convergence_with_labels(
     show: bool = False, verbose: bool = False
 ) -> None:
-    if verbose:
-        pprint_block("Convergence of LocalGP to ground truth with sensor labels")
+    """Tests convergence of LocalGP.
+
+    Arguments `show` and `verbose` are added for debugging purposes.
+    """
 
     random_seed = 1
     x_a, x_b, x, y_a, y_b, y, x_out, x_gt, y_gt = load_data_with_labels(
@@ -37,12 +39,6 @@ def test_localgp_convergence_with_labels(
                 (100, 1000),
                 (250, 2000),
             ]:
-                if verbose:
-                    pprint_block("Training SVGP", level=1)
-                    pprint("normalization:", normalization)
-                    pprint("clipping:", clipping)
-                    pprint("num_inducing_pts:", num_inducing_pts)
-                    pprint("max_iter:", max_iter)
 
                 local_model = SVGPModel(
                     kernel=kernel,

@@ -140,7 +140,7 @@ class NormalizeAndClip:
         y_shift: Optional[float] = None,
         y_scale: Optional[float] = None,
     ) -> np.ndarray:
-        """Denormalizes """
+        """Denormalizes"""
         self._assert_2d(y)
 
         y = np.copy(y)  # Prevent inplace modification

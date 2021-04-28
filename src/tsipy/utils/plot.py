@@ -34,7 +34,6 @@ def set_style(
     latex: bool = False,
 ) -> None:
     """Set `pyplot` style parameters."""
-    # pylint: disable=R0913
     style.use(style_name)
 
     rc_params = {
@@ -78,7 +77,7 @@ def configure_plot(
     log_scale_y: bool = False,
 ) -> None:
     """Helper function for configuring axes parameters."""
-    # pylint: disable=R0913, C0103
+    # pylint: disable=C0103
     if x_ticker:
         ax.xaxis.set_major_locator(ticker.MultipleLocator(x_ticker))
 
@@ -115,7 +114,7 @@ def plot_signals(
     **kwargs: Any,
 ) -> Tuple[Figure, Axes]:
     """Helper function for plotting signals."""
-    # pylint: disable=R0913, R0914
+    # pylint: disable=R0914
     fig, ax = plt.subplots()
     for signal_fourplet in signal_fourplets:
         x, y, label, kwargs_sig = signal_fourplet
@@ -152,7 +151,7 @@ def plot_signals_and_confidence(
     **kwargs: Any,
 ) -> Tuple[Figure, Axes]:
     """Helper function for plotting signal mean and confidence interval."""
-    # pylint: disable=R0913, R0914
+    # pylint: disable=R0914
 
     # Computes confidence interval width for Normal(0, 1)
     factor = norm.ppf(1 / 2 + confidence / 2)  # 0.95 % -> 1.959963984540054
@@ -197,7 +196,7 @@ def plot_signals_history(
     **kwargs: Any,
 ) -> Tuple[Figure, Axes]:
     """Helper function for plotting degradation correction history."""
-    # pylint: disable=R0913, R0914
+    # pylint: disable=R0914
     fig, axs = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=fig_size)
 
     for i, signals in enumerate(signals_history):

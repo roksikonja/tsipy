@@ -2,13 +2,13 @@ import numpy as np
 
 from tests.utils import check_array_equal, check_window_ranges
 from tsipy.fusion.local_gp import create_windows
-from tsipy.utils import pprint_block
 
 
 def test_ranges_one(verbose: bool = False) -> None:
-    if verbose:
-        pprint_block("Test", "1", color="green")
+    """Tests the creation of the `Windows` object.
 
+    It checks the boundaries of prediction and training windows.
+    """
     x = np.reshape(np.linspace(0.0, 1.0, 1000 + 1), newshape=(-1, 1))
     y = np.random.randn(*x.shape)
 
@@ -25,9 +25,10 @@ def test_ranges_one(verbose: bool = False) -> None:
 
 
 def test_ranges_two(verbose: bool = False) -> None:
-    if verbose:
-        pprint_block("Test", "2", color="green")
+    """Tests the creation of the `Windows` object.
 
+    It checks the boundaries of prediction and training windows.
+    """
     x = np.reshape(np.linspace(0.3, 1.0, 1000 + 1), newshape=(-1, 1))
     y = np.random.randn(*x.shape)
 
@@ -44,8 +45,12 @@ def test_ranges_two(verbose: bool = False) -> None:
 
 
 def test_ranges_three(verbose: bool = False) -> None:
-    if verbose:
-        pprint_block("Test", "3", color="green")
+    """Tests the creation of the `Windows` object.
+
+    It checks the boundaries of prediction and training windows.
+
+    Here, only one window is created.
+    """
 
     x = np.reshape(np.linspace(-0.3, 0.7, 2000 + 1), newshape=(-1, 1))
     y = np.random.randn(*x.shape)
@@ -63,12 +68,13 @@ def test_ranges_three(verbose: bool = False) -> None:
 
 
 def test_windows_gather_data(verbose: bool = False) -> None:
-    if verbose:
-        pprint_block("Test", "3", color="green")
+    """Tests if data can be gathered back from all windows.
 
+    When a window is created it holds a copy of the data points in it.
+    Here, we test the constructed where we gather data from all windows to
+    construct the original data arrays.
+    """
     for i in range(10):
-        if verbose:
-            pprint_block("Random seed", str(i), level=1, color="yellow")
         np.random.seed(i)
 
         x = np.reshape(np.linspace(-0.3, 3.0, 5000 + 1), newshape=(-1, 1))

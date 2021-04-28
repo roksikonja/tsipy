@@ -7,7 +7,10 @@ from tsipy.fusion.utils import build_and_concat_label_mask
 
 
 def test_kernel() -> None:
-    """Test implementation of the custom white kernel."""
+    """Tests implementation of the custom white kernel.
+
+    It checks output tensor shapes and values.
+    """
     np.random.seed(0)
 
     x_a = np.random.randint(0, 5, 3)
@@ -37,7 +40,7 @@ def test_kernel() -> None:
     n = 3
     variances = tf.zeros((x.shape[0],), dtype=tf.float64)
     for i in range(n):
-        mask = tf.cast(tf.equal(x[:, -1], i + 1), dtype=tf.float64)
+        mask = tf.cast(tf.equal(x[:, -1], i + 1), tf.float64)
         mask_variances = mask * noise_variances[i]
         variances = variances + mask_variances
 

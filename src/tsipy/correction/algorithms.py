@@ -1,5 +1,5 @@
 """
-This module implements algorithms that perform degradation correction.
+Module implements algorithms that perform degradation correction.
 """
 
 from collections import namedtuple
@@ -7,8 +7,8 @@ from typing import List, Tuple
 
 import numpy as np
 
-from ..utils import pprint
 from .models import DegradationModel
+from ..utils import pprint
 
 __all__ = ["History", "correct_degradation", "correct_one", "correct_both"]
 
@@ -40,7 +40,6 @@ def correct_degradation(
 
     This is a wrapper function for :func:`correct_one` and :func:`correct_both`.
     """
-    # pylint: disable=R0913
     if method == "correct_one":
         a_m_c, b_m_c, model, history = correct_one(
             t_m=t_m,
@@ -93,7 +92,7 @@ def correct_one(
         Corrected signals ``a`` and ``b``, degradation model ``d_c(.)`` and correction
         history.
     """
-    # pylint: disable=R0913, R0914
+    # pylint: disable=R0914
     _check_inputs(t_m, a_m, e_a_m, b_m, e_b_m)
 
     ratio_m = np.divide(a_m, b_m + 1e-9)
@@ -153,7 +152,7 @@ def correct_both(
         Corrected signals ``a`` and ``b``, degradation model ``d_c(.)`` and correction
         history.
     """
-    # pylint: disable=R0913, R0914
+    # pylint: disable=R0914
     _check_inputs(t_m, a_m, e_a_m, b_m, e_b_m)
 
     ratio_m = np.divide(a_m, b_m + 1e-9)

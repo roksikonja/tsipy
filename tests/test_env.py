@@ -1,7 +1,12 @@
+"""
+Module checks if the environment is properly installed.
+"""
+
+
 def test_dependencies() -> None:
     """Tests if all dependencies are installed and there are no conflicts."""
     # flake8: noqa: F401
-
+    # pylint: disable=C0415, W0611
     import os
     import warnings
 
@@ -22,7 +27,8 @@ def test_dependencies() -> None:
 
 
 def test_qpsolvers() -> None:
-    """Tests cvxpy and numpy conflicts."""
+    """Tests qpsolvers and numpy conflicts."""
+    # pylint: disable=C0415
     import numpy as np
     from qpsolvers import solve_qp
 

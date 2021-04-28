@@ -3,9 +3,9 @@ from typing import Optional, Tuple
 
 import numpy as np
 
-from ..utils import pprint
 from .core import FusionModel, NormalizeAndClip
 from .windows import Windows, create_windows
+from ..utils import pprint
 
 
 class LocalGPModel(FusionModel):
@@ -82,10 +82,21 @@ class LocalGPModel(FusionModel):
         assert len(x.shape) == 2, "Input x with shape {} is not 2D.".format(x.shape)
         assert len(y.shape) == 2, "Input y with shape {} is not 2D.".format(y.shape)
 
+        self._nc.reset()
         self._nc.compute_normalization_values(x, y)
 
         for window in self._windows:
             window.model = copy.deepcopy(self._model)
+
+            fit_window_width = window.x_fit_end - window.x_fit_start
+            fit_window_frac = fit_window_width / self.fit_window_width
+
+            # Rescale number of inducing points to the width of fit window
+            # This is done to have equal distribution of inducing points
+            # over all windows
+            window.model.num_inducing_pts = int(
+                np.ceil(fit_window_frac * self._model.num_inducing_pts)
+            )
 
     def fit(
         self,
@@ -132,10 +143,17 @@ class LocalGPModel(FusionModel):
         assert self._windows is not None, "Windows are not initialized."
 
         for window in self._windows:
-            if verbose:
-                print(str(window) + "\n")
-
             model = window.model
+
+            if verbose:
+                print(str(window))
+                pprint(
+                    "- n_ind_pts/time_unit",
+                    "{:.3f}".format(
+                        model.num_inducing_pts / (window.x_fit_end - window.x_fit_start)
+                    ),
+                    level=1,
+                )
 
             # Normalize values
             x_window = self._nc.normalize_x(window.x)

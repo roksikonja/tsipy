@@ -36,7 +36,7 @@ def compute_exposure(
         x = ~np.isnan(x)
         x = x.astype(np.float)
         return np.cumsum(x)
-    elif method == "exposure_sum":
+    if method == "exposure_sum":
         x = np.nan_to_num(x, nan=0.0, copy=True)  # NaNs to 0
         x = np.divide(x, x_mean, dtype=np.float)
         return np.cumsum(x)

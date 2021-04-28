@@ -11,6 +11,7 @@ from tsipy.utils import sort_inputs
 
 
 def load_data_with_labels(random_seed: int) -> Tuple[np.ndarray, ...]:
+    """Generates a dataset of two signals and constructs signal labels."""
     signal_generator = SignalGenerator(
         length=10_000, add_degradation=False, random_seed=random_seed
     )
@@ -31,6 +32,7 @@ def load_data_with_labels(random_seed: int) -> Tuple[np.ndarray, ...]:
 
 
 def load_data_without_labels(random_seed: int) -> Tuple[np.ndarray, ...]:
+    """Generates a dataset of two signals."""
     signal_generator = SignalGenerator(
         length=10_000, add_degradation=False, random_seed=random_seed
     )

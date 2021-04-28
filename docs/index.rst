@@ -37,6 +37,7 @@ Getting Started
     :maxdepth: 1
 
     VIRGO SPM dataset <notebooks/exp_spm.ipynb>
+    ACRIM1 and HF with LocalGP <notebooks/exp_acrim1_hf.ipynb>
 
 .. toctree::
     :caption: Package Reference

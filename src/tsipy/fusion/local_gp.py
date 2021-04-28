@@ -3,9 +3,10 @@ from typing import Optional, Tuple
 
 import numpy as np
 
-from .core import FusionModel, NormalizeAndClip
-from .windows import Windows, create_windows
 from ..utils import pprint
+from .core import FusionModel, NormalizeAndClip
+from .models_gp import SVGPModel
+from .windows import Windows, create_windows
 
 
 class LocalGPModel(FusionModel):
@@ -88,15 +89,18 @@ class LocalGPModel(FusionModel):
         for window in self._windows:
             window.model = copy.deepcopy(self._model)
 
-            fit_window_width = window.x_fit_end - window.x_fit_start
-            fit_window_frac = fit_window_width / self.fit_window_width
-
             # Rescale number of inducing points to the width of fit window
             # This is done to have equal distribution of inducing points
             # over all windows
-            window.model.num_inducing_pts = int(
-                np.ceil(fit_window_frac * self._model.num_inducing_pts)
-            )
+            if isinstance(window.model, SVGPModel) and isinstance(
+                self._model, SVGPModel
+            ):
+                fit_window_width = window.x_fit_end - window.x_fit_start
+                fit_window_frac = fit_window_width / self.fit_window_width
+
+                window.model.num_inducing_pts = int(
+                    np.ceil(fit_window_frac * self._model.num_inducing_pts)
+                )
 
     def fit(
         self,

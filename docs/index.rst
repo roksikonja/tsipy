@@ -31,6 +31,7 @@ Getting Started
     Degradation Correction <notebooks/demo_degradation.ipynb>
     Sensor Fusion <notebooks/demo_fusion.ipynb>
     Local GP and Windows <notebooks/demo_localgp.ipynb>
+    Measurement Noise Estimation <notebooks/demo_noise.ipynb>
 
 .. toctree::
     :caption: Experiments

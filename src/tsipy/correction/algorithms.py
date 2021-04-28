@@ -7,8 +7,8 @@ from typing import List, Tuple
 
 import numpy as np
 
-from .models import DegradationModel
 from ..utils import pprint
+from .models import DegradationModel
 
 __all__ = ["History", "correct_degradation", "correct_one", "correct_both"]
 

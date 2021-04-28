@@ -17,6 +17,7 @@ class SignalGenerator:
     def __init__(
         self,
         length: int = 100000,
+        y_center: float = 10.0,
         add_degradation: bool = True,
         add_noise: bool = True,
         downsampling_rates: Tuple = (0.9, 0.2),
@@ -24,19 +25,10 @@ class SignalGenerator:
         exposure_method: str = "num_measurements",
         random_seed: int = 0,
     ):
-        """One.
-
-        Args:
-            length:
-            add_degradation:
-            add_noise:
-            downsampling_rates:
-            noise_stds:
-            exposure_method:
-            random_seed:
-        """
         np.random.seed(random_seed)
         self.length = length
+
+        self.y_center = y_center
 
         self.add_degradation = add_degradation
         self.add_noise = add_noise
@@ -143,15 +135,15 @@ class SignalGenerator:
         return self.signals[signal_name]
 
     def generate_signal(self) -> np.ndarray:
-        x = 10 + self.generate_brownian(
+        y = self.y_center + self.generate_brownian(
             self.x.shape[0], dt=self.x[1] - self.x[0], std_scale=5
         )
-        return x
+        return y
 
     @staticmethod
     def generate_brownian(n: int, dt: float, std_scale: float) -> np.ndarray:
-        x = scipy.stats.norm.rvs(size=(n,), scale=std_scale * np.sqrt(dt), loc=0.0)
-        return np.cumsum(x)
+        y = scipy.stats.norm.rvs(size=(n,), scale=std_scale * np.sqrt(dt), loc=0.0)
+        return np.cumsum(y)
 
     @staticmethod
     def generate_degradation_parameters() -> np.ndarray:
@@ -165,7 +157,7 @@ class SignalGenerator:
         return nn_indices
 
     @staticmethod
-    def generate_noise(x: np.ndarray, std: float = 1.0) -> np.ndarray:
-        shape = x.shape
+    def generate_noise(y: np.ndarray, std: float = 1.0) -> np.ndarray:
+        shape = y.shape
         noise = np.random.normal(0, std, shape)
         return noise

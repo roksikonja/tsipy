@@ -8,7 +8,7 @@ copyright = "2021, Rok Šikonja"
 author = "Rok Šikonja"
 
 version = "1.0"
-release = "1.0.0"
+release = "1.0.2"
 
 pygments_style = "sphinx"
 templates_path = ["_templates"]

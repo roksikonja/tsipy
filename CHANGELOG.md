@@ -2,30 +2,40 @@
 
 ## Future Releases
 
-- Noise standard deviation extraction.
 - Degradation correction in white kernel.
+- Python multiple versions with tox.
 
-- Add documentation.
+## v1.0.2 - 28. 4. 2021
+
+- LocalGP and automatic results reproduction.
+- Add CI/CD github actions.
+  - black  
+  - mypy
+  - flake8
+  - isort
+  - pytest
+  
+- Changed dependency for solving QPs: from ```cvxpy``` to ```qpsolvers```.
+  
+- Added pytest tests.
+- Partially added docstrings.
+- Noise standard deviation extraction.
+- Experiments:
+  - SPM preliminary.
+  - ACRIM1 and HF using LocalGP.
+  
+- Added `y_center` attribute to SignalGenerator for centering created signals.
+
+## v1.0.1 - 30. 3. 2021
+
+- Project restructuring.
+  - Add documentation.
   - Getting started.
   - Documentation.
   - Tutorials.
   - References.
-- LocalGP and automatic results reproduction.
-- More stable API.
-- Add CI/CD github actions.
-  - mypy
-  - flake8
-  - pytest
-  - test coverage
-- Python multiple versions with tox.
   
-## v1.0.0 - 30. 3. 2021
-
-- Project restructuring.
-- Added mypy typing.
 - Added LocalGP.
-- Changed dependency for solving QPs: from ```cvxpy``` to ```qpsolvers```.
-- Added github action for mypy.
   
 - Added pytest tests.
 - Partially added docstrings.

@@ -153,7 +153,7 @@ class LocalGPModel(FusionModel):
                 print(str(window))
                 pprint(
                     "- n_ind_pts/time_unit",
-                    "{:.3f}".format(
+                    "{:.3f}\n".format(
                         model.num_inducing_pts / (window.x_fit_end - window.x_fit_start)
                     ),
                     level=1,

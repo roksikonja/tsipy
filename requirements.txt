@@ -53,7 +53,7 @@ tensorflow-estimator==2.4.0
 tensorflow-probability==0.12.2
 termcolor==1.1.0
 threadpoolctl==2.1.0
-tsipy==1.0.1
+tsipy==1.0.2
 typing-extensions==3.7.4.3
 urllib3==1.26.4
 Werkzeug==1.0.1

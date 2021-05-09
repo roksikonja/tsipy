@@ -9,7 +9,7 @@ def write_version_file(version_: str) -> None:
         f.write('__version__ = "{}"\n'.format(version_))
 
 
-version = "1.0.2"
+version = "1.0.3"
 write_version_file(version_=version)
 
 setup(

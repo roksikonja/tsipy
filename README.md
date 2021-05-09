@@ -13,13 +13,27 @@ Full documentation is available [online](https://tsipy.readthedocs.io/).
 
 ## Installation
 
-    # from pypi
     pip install tsipy
 
-    # install from source
+
+## Installation for Developers
+
+    # Clone repository
     git clone https://github.com/roksikonja/tsipy.git
-    python -m pip install --upgrade pip
-    pip install -e .
+    
+    # Setup venv
+    python -m venv venv
+    source venv/bin/activate
+
+    pip install --upgrade pip
+    pip install wheel
+
+    # For development
+    pip install -e .[dev]
+
+    # For documentation
+    pip install -e .[docs]
+
 
 ## Usage
 

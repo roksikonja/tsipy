@@ -18,7 +18,12 @@ from .data import (
     sort_inputs,
     transform_time_to_unit,
 )
-from .plot import plot_signals, plot_signals_and_confidence, plot_signals_history
+from .plot import (
+    COLORS,
+    plot_signals,
+    plot_signals_and_confidence,
+    plot_signals_history,
+)
 from .print import cformat, pformat, pprint, pprint_block
 
 __all__ = [
@@ -42,6 +47,7 @@ __all__ = [
     "pformat",
     "pprint",
     "pprint_block",
+    "COLORS",
     "plot_signals",
     "plot_signals_history",
     "plot_signals_and_confidence",

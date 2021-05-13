@@ -6,6 +6,7 @@ import os
 from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib as mpl
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
@@ -15,10 +16,13 @@ from matplotlib.figure import Figure
 from scipy.stats import norm
 
 __all__ = [
+    "COLORS",
     "plot_signals",
     "plot_signals_history",
     "plot_signals_and_confidence",
 ]
+
+COLORS = list(mcolors.TABLEAU_COLORS)
 
 
 def set_style(

@@ -55,7 +55,8 @@ def load_dataset(dataset_name: str):
     """Loads the VIRGO dataset."""
     if dataset_name == "virgo":
         return pd.read_hdf(os.path.join("../data", "VirgowithNan.h5"), "table")
-    elif dataset_name == "virgo_old_2020":
+
+    if dataset_name == "virgo_old_2020":
         data_frame = pd.read_hdf(
             os.path.join("../data", "virgo_level1_2020.h5"), "table"
         )
@@ -64,10 +65,11 @@ def load_dataset(dataset_name: str):
         )
         data_frame.drop(columns=["TEMPERATURE"], inplace=True)
         return data_frame
-    elif dataset_name == "virgo_2020":
+
+    if dataset_name == "virgo_2020":
         return pd.read_hdf(os.path.join("../data", "virgo_2020.h5"), "table")
-    else:
-        raise ValueError("Dataset {} does not exist.".format(dataset_name))
+
+    raise ValueError("Dataset {} does not exist.".format(dataset_name))
 
 
 if __name__ == "__main__":

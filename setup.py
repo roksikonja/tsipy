@@ -45,6 +45,7 @@ setup(
             "flake8",
             "pylint",
             "jupyter",
+            "twine",
         ],
         "docs": [
             "sphinx",

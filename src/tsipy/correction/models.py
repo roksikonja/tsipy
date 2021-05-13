@@ -305,11 +305,11 @@ def load_model(model: str) -> DegradationModel:
     model = model.lower()
     if model == "exp":
         return ExpModel()
-    elif model == "explin":
+    if model == "explin":
         return ExpLinModel()
-    elif model == "mr":
+    if model == "mr":
         return MRModel()
-    elif model == "smr":
+    if model == "smr":
         return SmoothMRModel()
 
     raise ValueError("Invalid degradation model type.")

@@ -7,19 +7,35 @@ Source code is available `here <https://github.com/roksikonja/tsipy>`_.
 .. automodule:: tsipy
     :members:
 
+
 Installation
 ------------
 
 .. code:: console
 
-    # from pypi
     $ pip install tsipy
 
-    # install from source for developers
-    $ git clone https://github.com/roksikonja/tsipy.git
-    $ python -m pip install --upgrade pip
-    $ pip install -e .
+Installation for Developers
+---------------------------
 
+
+.. code:: console
+
+    # Clone repository
+    $ git clone https://github.com/roksikonja/tsipy.git
+
+    # Setup venv
+    $ python -m venv venv
+    $ source venv/bin/activate
+
+    $ pip install --upgrade pip
+    $ pip install wheel
+
+    # For development
+    $ pip install -e .[dev]
+
+    # For documentation
+    $ pip install -e .[docs]
 
 Getting Started
 ---------------

@@ -30,7 +30,6 @@ def parse_arguments():
         "-d",
         default="acrim",
         type=str,
-        help="Choices: acrim_erbs, acrim.",
     )
 
     # Fusion Model
@@ -65,6 +64,22 @@ def parse_arguments():
     return parser.parse_args()
 
 
+def load_dataset(dataset_path_: str, columns_: Dict[int, str]) -> pd.DataFrame:
+    data_ = pd.read_csv(
+        dataset_path_,
+        delimiter=" ",
+        header=None,
+    ).rename(columns=columns_)
+
+    data_["t_org"] = data_["t"].values.copy()
+    data_["t"] = transform_time_to_unit(
+        data_["t"] - data_["t"][0],
+        t_label="year",
+        start=datetime.datetime(1980, 1, 1),
+    )
+    return data_
+
+
 if __name__ == "__main__":
     args = parse_arguments()
 
@@ -86,19 +101,8 @@ if __name__ == "__main__":
         dataset_path = os.path.join(datasets_path, dataset)
         dataset = os.path.splitext(dataset)[0]
 
-        datasets[dataset] = pd.read_csv(
-            dataset_path,
-            delimiter=" ",
-            header=None,
-        ).rename(columns=columns)
-
-        data = datasets[dataset]
-        data["t_org"] = data["t"].values.copy()
-        data["t"] = transform_time_to_unit(
-            data["t"] - data["t"][0],
-            t_label="year",
-            start=datetime.datetime(1980, 1, 1),
-        )
+        data = load_dataset(dataset_path, columns)
+        datasets[dataset] = data
         print(data.head(5))
 
     pprint_block("Experiment", args.experiment_name)

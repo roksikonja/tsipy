@@ -67,12 +67,24 @@ class SVGPModel(FusionModel):
 
         # Inducing variables
         if x_inducing is None:
-            x_uniform = np.linspace(
-                np.min(x[:, 0]), np.max(x[:, 0]), self.num_inducing_pts + 1
-            )
-            x_uniform_indices = find_nearest_indices(x[:, 0], x_uniform)
-            x_inducing = np.copy(x[x_uniform_indices, :])
-            self.x_inducing = x_inducing
+            # If number of inducing points in greater than the number of data points
+            # then use data points as inducing points and set them to be untrainable
+            if x.shape[0] < self.num_inducing_pts:
+                self.x_inducing = np.copy(x)
+                self.inducing_trainable = False
+
+                message = (
+                    "Number of inducing points is greater than the number"
+                    "of inducing points, thus setting x_inducing = x."
+                )
+                pprint("Warning:", message)
+            else:
+                x_uniform = np.linspace(
+                    np.min(x[:, 0]), np.max(x[:, 0]), self.num_inducing_pts + 1
+                )
+                x_uniform_indices = find_nearest_indices(x[:, 0], x_uniform)
+                x_inducing = np.copy(x[x_uniform_indices, :])
+                self.x_inducing = x_inducing
         else:
             assert (
                 len(x_inducing.shape) == 2

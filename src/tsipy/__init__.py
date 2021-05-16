@@ -4,4 +4,6 @@ Originally, it was built for processing measurements of Total Solar Irradiance (
 However, the package implements tools for degradation correction and sensor fusion
 not particular of any measurement quantity.
 """
-__version__: str = "1.0.2"
+from .__version__ import version
+
+__version__ = version

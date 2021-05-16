@@ -3,24 +3,20 @@ from glob import glob
 
 from setuptools import find_packages, setup
 
-
-def write_version_file(version_: str) -> None:
-    with open("src/tsipy/version.py", "w") as f:
-        f.write('__version__ = "{}"\n'.format(version_))
-
-
-version = "1.0.3"
-write_version_file(version_=version)
+# Load version file into version variable
+with open(os.path.join("src/tsipy", "__version__.py")) as f:
+    code = compile(f.read(), f.name, "exec")
+    exec(code)
 
 setup(
-    version=version,
+    version=version,  # noqa: F821
     packages=find_packages("src"),
     package_dir={"": "src"},
     package_data={"tsipy": ["py.typed"]},
     py_modules=[
         os.path.splitext(os.path.basename(path))[0] for path in glob("src/*.py")
     ],
-    python_requires=">=3.7, <3.9",
+    python_requires=">=3.7",
     install_requires=[
         "numpy",
         "tensorflow",

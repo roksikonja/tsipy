@@ -33,11 +33,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--experiment_name", "-e", default="exp_fusion", type=str)
     parser.add_argument(
-        "--dataset_name",
-        "-d",
-        default="acrim",
-        type=str,
-        help="Choices: acrim_erbs, acrim.",
+        "--dataset_name", default="acrim", type=str, choices=["acrim", "acrim_erbx"]
     )
 
     # Fusion Model
@@ -54,14 +50,12 @@ def parse_arguments():
     # Local GP
     parser.add_argument(
         "--pred_window",
-        "-p_w",
         default=1.0,
         type=float,
         help="Width of prediction window in years.",
     )
     parser.add_argument(
         "--fit_window",
-        "-f_w",
         default=3.0,
         type=float,
         help="Width of training window in years.",
@@ -97,7 +91,7 @@ def load_dataset(dataset_name: str) -> pd.DataFrame:
         )
     elif dataset_name == "acrim":
         data_ = pd.read_csv(
-            os.path.join("../data", "ACRIM1_SATIRE_HF.txt"),
+            os.path.join("../data", "acrim1_satire_hf.txt"),
             delimiter=" ",
             header=None,
         )

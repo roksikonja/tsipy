@@ -14,7 +14,7 @@ declare -a datasets=( \
 
 N=${#datasets[@]}
 
-DATA_DIR="../data/tsi_40"
+DATA_DIR="/home/rok/tsipy/data/tsi_40"
 
 FUSION_MODEL="localgp"
 NUM_INDUCING_PTS=500

@@ -44,8 +44,8 @@ def parse_arguments():
     parser.add_argument("--clipping", "-c", action="store_false")
 
     # SVGP
-    parser.add_argument("--num_inducing_pts", "-n_ind_pts", default=100, type=int)
-    parser.add_argument("--max_iter", default=1000, type=int)
+    parser.add_argument("--num_inducing_pts", "-n_ind_pts", default=1000, type=int)
+    parser.add_argument("--max_iter", default=8000, type=int)
 
     # Local GP
     parser.add_argument(

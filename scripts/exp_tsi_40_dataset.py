@@ -110,9 +110,7 @@ if __name__ == "__main__":
     dataset = os.path.splitext(args.dataset_file)[0]
     data = load_dataset(dataset_path)
 
-    results_dir = make_dir(
-        os.path.join(args.results_dir, f"{args.experiment_name}_{dataset}")
-    )
+    results_dir = make_dir(os.path.join(args.results_dir, f"{args.experiment_name}"))
     results_dir = make_dir(os.path.join(results_dir, dataset))
 
     pprint_block("Dataset", dataset)
@@ -258,8 +256,6 @@ if __name__ == "__main__":
         legend="upper right",
         log_scale_x=True,
     )
-    ax.set_xscale("log")
-    fig.savefig(os.path.join(results_dir, "signals_fused_psd_log"))
     if args.figure_show:
         fig.show()
 

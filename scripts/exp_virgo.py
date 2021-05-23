@@ -54,7 +54,7 @@ def parse_arguments():
 def load_dataset(dataset_name: str):
     """Loads the VIRGO dataset."""
     if dataset_name == "virgo":
-        return pd.read_hdf(os.path.join("../data", "VirgowithNan.h5"), "table")
+        return pd.read_hdf(os.path.join("../data", "virgo_2020_nan.h5"), "table")
 
     if dataset_name == "virgo_old_2020":
         data_frame = pd.read_hdf(

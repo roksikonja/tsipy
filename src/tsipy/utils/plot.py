@@ -35,7 +35,7 @@ def set_style(
     title_font_size: int = 16,
     legend_font_size: int = 16,
     marker_type: str = "x",
-    out_format: str = "pdf",
+    out_format: str = "png",
     latex: bool = False,
 ) -> None:
     """Set `pyplot` style parameters."""
@@ -65,6 +65,8 @@ def set_style(
                 ]
             ),
         }
+        rc_params["savefig.format"] = "pdf"
+
         rc_params = {**rc_params, **latex_rc_params}
 
     mpl.rcParams.update(rc_params)

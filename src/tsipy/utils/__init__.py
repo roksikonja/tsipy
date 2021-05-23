@@ -23,6 +23,7 @@ from .plot import (
     plot_signals,
     plot_signals_and_confidence,
     plot_signals_history,
+    set_style,
 )
 from .print import cformat, pformat, pprint, pprint_block
 
@@ -48,6 +49,7 @@ __all__ = [
     "pprint",
     "pprint_block",
     "COLORS",
+    "set_style",
     "plot_signals",
     "plot_signals_history",
     "plot_signals_and_confidence",

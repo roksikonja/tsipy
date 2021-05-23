@@ -17,6 +17,7 @@ from scipy.stats import norm
 
 __all__ = [
     "COLORS",
+    "set_style",
     "plot_signals",
     "plot_signals_history",
     "plot_signals_and_confidence",

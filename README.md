@@ -13,34 +13,39 @@ Full documentation is available [online](https://tsipy.readthedocs.io/).
 
 ## Installation
 
-    pip install tsipy
-
+```bash
+pip install tsipy
+```
 
 ## Installation for Developers
 
-    # Clone repository
-    git clone https://github.com/roksikonja/tsipy.git
-    
-    # Setup venv
-    python -m venv venv
-    source venv/bin/activate
+```bash
+# Clone repository
+git clone https://github.com/roksikonja/tsipy.git
+cd tsipy/
 
-    pip install --upgrade pip
-    pip install wheel
+# Setup venv
+python -m venv venv
+source venv/bin/activate
 
-    # For development
-    pip install -e .[dev]
+pip install --upgrade pip
+pip install wheel
 
-    # For documentation
-    pip install -e .[docs]
+# For development
+pip install -e .[dev]
 
+# For documentation
+pip install -e .[docs]
+```
 
 ## Usage
 
-Demos can be found in ```./scripts```.
+Demos can be found in ```./scripts``` and ```./docs/notebooks```.
 
-    python ./scripts/exp_virgo.py
-    python ./scripts/exp_fusion.py
+```bash
+python ./scripts/exp_virgo.py
+python ./scripts/exp_fusion.py
+```
 
 ## References
 

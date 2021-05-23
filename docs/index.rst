@@ -48,6 +48,7 @@ Getting Started
     Sensor Fusion <notebooks/demo_fusion.ipynb>
     Local GP and Windows <notebooks/demo_localgp.ipynb>
     Measurement Noise Estimation <notebooks/demo_noise.ipynb>
+    Kernel Design <notebooks/demo_kernels.ipynb>
 
 .. toctree::
     :caption: Experiments
